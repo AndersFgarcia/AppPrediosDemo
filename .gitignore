@@ -1,0 +1,20 @@
+# Archivos y carpetas de compilación
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.log
+
+# Configuración de usuario de Visual Studio
+*.user
+*.suo
+*.vs/
+.vscode/
+
+# Otros
+*.dbmdl
+*.bak
+*.tmp
+*.ide

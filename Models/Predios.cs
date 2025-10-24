@@ -1,35 +1,40 @@
 ﻿using System;
-using System.ComponentModel;   // INotifyDataErrorInfo, DataErrorsChangedEventArgs
 
 namespace AppPrediosDemo.Models
 {
-    /// Modelo de datos principal (solo una parte representativa; amplíalo con el resto).
     public class Predio
     {
         // Identificación
         public string? ID { get; set; }
         public string? FMI { get; set; }
         public string? NoExpediente { get; set; }
-        public string? Fuente { get; set; }
-        public string? TipoProcesoAgrario { get; set; }
+
+        // Catálogos (guardamos Ids)
+        public int? IdFuenteProceso { get; set; }
+        public int? IdTipoProceso { get; set; }
+        public int? IdEtapaProcesal { get; set; }
+
+        // Libres
         public string? Dependencia { get; set; }
         public string? IdOrfeo { get; set; }
 
-        // Ubicación
+        // Ubicación (cascada)
         public string? Departamento { get; set; }
         public string? Municipio { get; set; }
+        public string? CentroPoblado { get; set; }
+
         public string? CirculoRegistral { get; set; }
         public decimal? AreaRegistral { get; set; }
         public decimal? AreaCalculada { get; set; }
 
         // Titularidad
-        public string? PersonaTitular { get; set; } // Natural/Jurídica
+        public string? PersonaTitular { get; set; }
         public string? NombrePropietarios { get; set; }
         public string? NumeroIdentificacion { get; set; }
         public string? TituloOriginario { get; set; }
         public string? AnalisisNaturalezaUltimaTradicion { get; set; }
 
-        // Gravámenes (ejemplo)
+        // Gravámenes
         public bool Hipoteca_SiNo { get; set; }
         public string? Hipoteca_Anotacion { get; set; }
         public bool Servidumbres_SiNo { get; set; }
@@ -82,5 +87,3 @@ namespace AppPrediosDemo.Models
         public DateTime? FechaGestionEtapaSIT { get; set; }
     }
 }
-
-

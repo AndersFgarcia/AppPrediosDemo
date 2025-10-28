@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,13 +19,17 @@ public partial class MedidaProcesal
 
     [StringLength(10)]
     [Unicode(false)]
-    public string Valor { get; set; } = null!;
+    public string Valor { get; set; } = null!;   // "SI" | "NO" | "PENDIENTE"
 
     [StringLength(4000)]
     [Unicode(false)]
     public string? Anotacion { get; set; }
 
-    [ForeignKey("IdEstudioTerreno")]
-    [InverseProperty("MedidaProcesals")]
+    [StringLength(100)]
+    [Unicode(false)]
+    public string? TipoClasificacion { get; set; }  // solo aplica a RUPTA
+
+    [ForeignKey(nameof(IdEstudioTerreno))]
+    [InverseProperty(nameof(Models.EstudioTerreno.MedidaProcesals))]
     public virtual EstudioTerreno IdEstudioTerrenoNavigation { get; set; } = null!;
 }

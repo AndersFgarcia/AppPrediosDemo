@@ -10,12 +10,8 @@ namespace AppPrediosDemo
     {
         public MainWindow()
         {
-            InitializeComponent();
-
+            InitializeComponent();                 // carga XAML y recursos
             DataContext = new PredioFormViewModel();
-
-            ProbarConexionBD();
-            ProbarInsercionesEF(); // prueba de secuencias + EF
         }
 
         private void ProbarConexionBD()

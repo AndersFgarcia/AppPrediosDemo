@@ -15,8 +15,8 @@ namespace AppPrediosDemo.Models
         public int? IdEtapaProcesal { get; set; }
 
         // Libres
-        public string? Dependencia { get; set; }
-        public string? IdOrfeo { get; set; }
+        public string? RadicadoOrfeo { get; set; }   // ID ORFEO
+        public string? Dependencia { get; set; }     // Dependencia
 
         // Ubicación (cascada)
         public string? Departamento { get; set; }

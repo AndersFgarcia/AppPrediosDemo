@@ -16,10 +16,8 @@ namespace AppPrediosDemo.Models
         public virtual DbSet<Localizacion> Localizacions { get; set; }
         public virtual DbSet<MedidaProcesal> MedidaProcesals { get; set; }
         public virtual DbSet<RegistroProceso> RegistroProcesos { get; set; }
-        public virtual DbSet<TipoDocumento> TipoDocumentos { get; set; }
         public virtual DbSet<TipoProceso> TipoProcesos { get; set; }
-        public virtual DbSet<Usuario> Usuarios { get; set; }
-
+        
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -69,24 +67,35 @@ namespace AppPrediosDemo.Models
                 e.HasKey(x => x.IdRegistroProceso).HasName("PK_IdRegistroProceso");
                 e.Property(x => x.IdRegistroProceso)
                  .ValueGeneratedOnAdd()
-                 .HasDefaultValueSql("NEXT VALUE FOR Postulacion.Seq_RegistroProceso");
+                 .HasDefaultValueSql("NEXT VALUE FOR [Postulacion].[Seq_RegistroProceso]");
+                // INTEGRACIÓN DE HASMAXLENGTH PARA RegistroProceso:
+                e.Property(x => x.IdPostulacion).HasMaxLength(30).IsRequired();
+                e.Property(x => x.FMI).HasMaxLength(100).IsRequired();
+                e.Property(x => x.NumeroExpediente).HasMaxLength(100);
+                e.Property(x => x.Dependencia).HasMaxLength(10);
+                e.Property(x => x.RadicadoOrfeo).HasMaxLength(50);
+
+                //posible error
+               // e.HasIndex(x => x.IdPostulacion)
+                 //.IsUnique() // 👈 Esto es lo que fuerza la unicidad
+                 //.HasConstraintName("UX_RegistroProceso_IdPostulacion"); // Nombre del índice único
 
                 e.HasOne(x => x.IdEtapaProcesalNavigation)
                  .WithMany(p => p.RegistroProcesos)
                  .HasForeignKey(x => x.IdEtapaProcesal)
-                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("FK_EtapaProcesal_IdEtapaProcesal");
 
                 e.HasOne(x => x.IdFuenteProcesoNavigation)
                  .WithMany(p => p.RegistroProcesos)
                  .HasForeignKey(x => x.IdFuenteProceso)
-                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("FK_FuenteProceso_IdFuenteProceso");
 
                 e.HasOne(x => x.IdTipoProcesoNavigation)
                  .WithMany(p => p.RegistroProcesos)
                  .HasForeignKey(x => x.IdTipoProceso)
-                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("FK_TipoProceso_IdTipoProceso");
             });
 
@@ -96,21 +105,29 @@ namespace AppPrediosDemo.Models
                 e.HasKey(x => x.IdEstudioTerreno).HasName("PK_IdEstudioTerreno");
                 e.Property(x => x.IdEstudioTerreno)
                  .ValueGeneratedOnAdd()
-                 .HasDefaultValueSql("NEXT VALUE FOR Postulacion.Seq_EstudioTerreno");
+                 .HasDefaultValueSql("NEXT VALUE FOR [Postulacion].[Seq_EstudioTerreno]");
 
                 e.Property(x => x.AreaRegistral).HasColumnType("numeric(18,4)");
                 e.Property(x => x.AreaCalculada).HasColumnType("numeric(18,4)");
 
+                // INTEGRACIÓN DE HASMAXLENGTH EstudioTerreno
+                e.Property(x => x.CirculoRegistral).HasMaxLength(100);
+                e.Property(x => x.TipoPersonaTitular).HasMaxLength(50);
+                e.Property(x => x.NombrePropietario).HasMaxLength(100);
+                e.Property(x => x.ApellidoPropietario).HasMaxLength(100);
+                e.Property(x => x.NaturalezaJuridica).HasMaxLength(100);
+                e.Property(x => x.AcreditacionPropiedad).HasMaxLength(100);
+
                 e.HasOne(x => x.IdLocalizacionNavigation)
                  .WithMany(p => p.EstudioTerrenos)
                  .HasForeignKey(x => x.IdLocalizacion)
-                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("FK_IdLocalizacion");
 
                 e.HasOne(x => x.IdRegistroProcesoNavigation)
                  .WithMany(p => p.EstudioTerrenos)
                  .HasForeignKey(x => x.IdRegistroProceso)
-                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("FK_IdRegistroProceso");
             });
 
@@ -120,12 +137,18 @@ namespace AppPrediosDemo.Models
                 e.HasKey(x => x.IdMedidasProcesal).HasName("PK_IdMedidasProcesal");
                 e.Property(x => x.IdMedidasProcesal)
                  .ValueGeneratedOnAdd()
-                 .HasDefaultValueSql("NEXT VALUE FOR Postulacion.Seq_MedidaProcesal");
+                 .HasDefaultValueSql("NEXT VALUE FOR [Postulacion].[Seq_MedidaProcesal]");
+
+                // MedidaProcesal
+                e.Property(x => x.Objeto).HasMaxLength(1000).IsRequired();
+                e.Property(x => x.Valor).HasMaxLength(10).IsRequired();
+                e.Property(x => x.Anotacion).HasMaxLength(4000);
+                e.Property(x => x.TipoClasificacion).HasMaxLength(100);
 
                 e.HasOne(x => x.IdEstudioTerrenoNavigation)
                  .WithMany(p => p.MedidaProcesals)
                  .HasForeignKey(x => x.IdEstudioTerreno)
-                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("FK_IdEstudioTerreno_Postulacion_EstudioTerreno");
             });
 
@@ -137,28 +160,14 @@ namespace AppPrediosDemo.Models
                 e.Property(x => x.IdGestionJuridica)
                  .HasColumnName("IdConceptoPrevio")
                  .ValueGeneratedOnAdd()
-                 .HasDefaultValueSql("NEXT VALUE FOR AnalisisJuridico.Seq_ConceptosPrevio");
+                 .HasDefaultValueSql("NEXT VALUE FOR [AnalisisJuridico].[Seq_ConceptosPrevio]");
+                e.Property(x => x.Concepto).HasMaxLength(500); // Puedes ajustar el valor según tu necesidad
 
                 e.HasOne(x => x.IdRegistroProcesoNavigation)
                  .WithMany(p => p.ConceptosPrevios)
                  .HasForeignKey(x => x.IdRegistroProceso)
-                 .OnDelete(DeleteBehavior.ClientSetNull)
+                 .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("FK_IdRegistroProceso_GestionJuridica");
-            });
-
-            // ----- dbo (si los usas) -----
-            mb.Entity<Usuario>(e =>
-            {
-                e.ToTable("Usuarios", "dbo");
-                e.HasKey(x => x.IdUsuario).HasName("PK_IdUsuario");
-                e.Property(x => x.IdUsuario).ValueGeneratedNever();
-            });
-
-            mb.Entity<TipoDocumento>(e =>
-            {
-                e.ToTable("TipoDocumento", "dbo");
-                e.HasKey(x => x.IdTipoDocumento).HasName("PK_IdTipoDocumento");
-                e.Property(x => x.IdTipoDocumento).ValueGeneratedNever();
             });
 
             OnModelCreatingPartial(mb);

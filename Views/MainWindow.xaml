@@ -2,107 +2,137 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:vm="clr-namespace:AppPrediosDemo.ViewModels"
         Title="Gestión de Predios" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen" Background="#FAFAFA"
         x:Name="Root">
-	<!-- Estilos -->
-	<Window.Resources>
-		<Style x:Key="LabelCell" TargetType="TextBlock">
-			<Setter Property="VerticalAlignment" Value="Center"/>
-			<Setter Property="Margin" Value="0,6,8,6"/>
-			<Setter Property="FontWeight" Value="SemiBold"/>
-		</Style>
 
-		<Style x:Key="InputCell" TargetType="FrameworkElement">
-			<Setter Property="VerticalAlignment" Value="Center"/>
-			<Setter Property="Margin" Value="0,4,0,4"/>
-			<Setter Property="Height" Value="28"/>
-		</Style>
+    <!-- Estilos -->
+    <Window.Resources>
+        <Style x:Key="LabelCell" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,6,8,6"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
 
-		<Style x:Key="ComboCell" TargetType="ComboBox" BasedOn="{StaticResource InputCell}">
-			<Setter Property="MinWidth" Value="180"/>
-			<Setter Property="HorizontalAlignment" Value="Stretch"/>
-		</Style>
+        <Style x:Key="InputCell" TargetType="FrameworkElement">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,4,0,4"/>
+            <Setter Property="Height" Value="28"/>
+        </Style>
 
-		<Style x:Key="NoteBox" TargetType="TextBox" BasedOn="{StaticResource InputCell}">
-			<Setter Property="AcceptsReturn" Value="True"/>
-			<Setter Property="TextWrapping"  Value="Wrap"/>
-			<Setter Property="MinHeight"     Value="70"/>
-			<Setter Property="VerticalAlignment" Value="Stretch"/>
-			<Setter Property="Height" Value="{x:Static sys:Double.NaN}"/>
-		</Style>
+        <Style x:Key="ComboCell" TargetType="ComboBox" BasedOn="{StaticResource InputCell}">
+            <Setter Property="MinWidth" Value="180"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
 
-		<Style TargetType="GroupBox">
-			<Setter Property="Margin" Value="0,0,0,14"/>
-			<Setter Property="Padding" Value="12"/>
-		</Style>
-	</Window.Resources>
+        <Style x:Key="NoteBox" TargetType="TextBox" BasedOn="{StaticResource InputCell}">
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MinHeight" Value="70"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="Height" Value="{x:Static sys:Double.NaN}"/>
+        </Style>
 
-	<DockPanel Margin="16">
-		<StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-			<TextBlock Text="Gestión de Predios" FontSize="20" FontWeight="Bold"/>
-			<TextBlock Text="  ·  Captura y edición" Foreground="#666" Margin="6,4,0,0"/>
-		</StackPanel>
+        <Style TargetType="GroupBox">
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+    </Window.Resources>
 
-		<TabControl>
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Text="Gestión de Predios" FontSize="20" FontWeight="Bold"/>
+            <TextBlock Text="  ·  Captura y edición" Foreground="#666" Margin="6,4,0,0"/>
+        </StackPanel>
 
-			<!-- ========== 1) IDENTIFICACIÓN ========== -->
+        <TabControl>
+
+            <!-- ========== 1) IDENTIFICACIÓN ========== -->
             <TabItem Header="Identificación">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
                     <StackPanel>
 
-                        <!-- Identificación -->
-                        <GroupBox Header="Consulta" Margin="0,0,0,12">
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="220"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="220"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+						<GroupBox Header="Consulta" Margin="12">
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="Auto"/>
+									<RowDefinition Height="200"/>
+									<RowDefinition Height="Auto"/>
+								</Grid.RowDefinitions>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="110"/>
+									<ColumnDefinition Width="8"/>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="150"/>
+									<ColumnDefinition Width="16"/>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="150"/>
+									<ColumnDefinition Width="16"/>
+									<ColumnDefinition Width="Auto"/>
+									<ColumnDefinition Width="170"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
 
-                                <!-- Filtros -->
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ID" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="0" Grid.Column="1" Text="{Binding FiltroId}" Style="{StaticResource InputCell}"/>
+								<!-- Guardar / Cancelar -->
+								<Button Grid.Row="0" Grid.Column="0" Width="110" Content="Guardar"
+										Command="{Binding GuardarCommand}"/>
+								<Button Grid.Row="0" Grid.Column="1" Width="110" Margin="8,0,0,0" Content="Cancelar"
+										Command="{Binding CancelarCommand}"/>
 
-                                <TextBlock Grid.Row="0" Grid.Column="2" Text="FMI" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="0" Grid.Column="3" Text="{Binding FiltroFmi}" Style="{StaticResource InputCell}"/>
+								<!-- Filtros -->
+								<TextBlock Grid.Row="0" Grid.Column="3" Text="ID" VerticalAlignment="Center"/>
+								<TextBox   Grid.Row="0" Grid.Column="4" Width="140"
+										   Text="{Binding FiltroId, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                <TextBlock Grid.Row="0" Grid.Column="4" Text="No. Expediente" Style="{StaticResource LabelCell}" Margin="12,0,6,0"/>
-                                <TextBox   Grid.Row="0" Grid.Column="5" Width="180" Text="{Binding FiltroExpediente}" />
+								<TextBlock Grid.Row="0" Grid.Column="6" Text="FMI" VerticalAlignment="Center"/>
+								<TextBox   Grid.Row="0" Grid.Column="7" Width="140"
+										   Text="{Binding FiltroFmi, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                <!-- Botones -->
-                                <DockPanel LastChildFill="False" Margin="8">
-                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                        <Button Content="Nuevo"   Width="110" Margin="0,0,8,0" Command="{Binding NuevoCommand}"/>
-                                        <Button Content="Guardar" Width="110" Command="{Binding GuardarCommand}"/>
-                                        <Button Content="Cancelar" Width="110" Margin="8,0,0,0" Command="{Binding CancelarCommand}"/>
-                                    </StackPanel>
-                                </DockPanel>
+								<TextBlock Grid.Row="0" Grid.Column="9" Text="No. Expediente" VerticalAlignment="Center"/>
+								<TextBox   Grid.Row="0" Grid.Column="10" Width="160"
+										   Text="{Binding FiltroExpediente, UpdateSourceTrigger=PropertyChanged}"/>
 
-                                <!-- Resultados (máx 5) -->
-                                <DataGrid Grid.Row="1" Grid.ColumnSpan="6" Margin="0,8,0,0"
+								<!-- Buscar / Limpiar -->
+								<StackPanel Grid.Row="0" Grid.Column="11" Orientation="Horizontal" HorizontalAlignment="Right">
+									<Button Content="Buscar"  Width="90" Command="{Binding BuscarRegistrosCommand}"/>
+									<Button Content="Limpiar" Width="90" Margin="8,0,0,0" Command="{Binding LimpiarFiltrosCommand}"/>
+								</StackPanel>
+
+								<!-- Resultados -->
+								<DataGrid Grid.Row="1" Grid.ColumnSpan="12" Margin="0,8,0,0"
 										  ItemsSource="{Binding ResultadosBusqueda}"
-										  SelectedItem="{Binding ResultadoSeleccionado, Mode=TwoWay}"
-										  AutoGenerateColumns="False" IsReadOnly="True" Height="160">
-                                    <DataGrid.Columns>
-                                        <DataGridTextColumn Header="ID" Binding="{Binding IdRegistroProceso}" Width="90"/>
-                                        <DataGridTextColumn Header="FMI" Binding="{Binding FMI}" Width="*" />
-                                        <DataGridTextColumn Header="No. Expediente" Binding="{Binding NumeroExpediente}" Width="160"/>
-                                        <DataGridTextColumn Header="Tipo" Binding="{Binding TipoProceso}" Width="160"/>
-                                        <DataGridTextColumn Header="Etapa" Binding="{Binding EtapaProcesal}" Width="160"/>
-                                    </DataGrid.Columns>
-                                </DataGrid>
-                            </Grid>
-                        </GroupBox>
+										  SelectedItem="{Binding ResultadoSeleccionado}"
+										  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+									<DataGrid.Columns>
+										<DataGridTextColumn Header="ID"             Binding="{Binding IdRegistroProceso}" Width="80"/>
+										<DataGridTextColumn Header="FMI"            Binding="{Binding FMI}"                Width="*"/>
+										<DataGridTextColumn Header="No. Expediente" Binding="{Binding NumeroExpediente}"   Width="170"/>
+										<DataGridTextColumn Header="Tipo"           Binding="{Binding Tipo}"               Width="170"/>
+										<DataGridTextColumn Header="Etapa"          Binding="{Binding Etapa}"              Width="170"/>
+									</DataGrid.Columns>
+								</DataGrid>
 
-                        
+								<!-- Debug opcional -->
+								<TextBlock Grid.Row="2" Grid.ColumnSpan="12" Margin="0,6,0,0"
+										   Text="{Binding DebugInfo}" Foreground="DarkRed"/>
+							</Grid>
+						</GroupBox>
+
+                        <StackPanel Orientation="Horizontal" Margin="8" Opacity="0.7">
+                            <TextBlock Text="HasErrors="/>
+                            <TextBlock Text="{Binding HasErrors}" Margin="8,0"/>
+                            <TextBlock Text="IdLocalizacion="/>
+                            <TextBlock Text="{Binding IdLocalizacionSeleccionada}" Margin="8,0"/>
+                            <TextBlock Text="Fuente="/>
+                            <TextBlock Text="{Binding PredioActual.IdFuenteProceso}" Margin="8,0"/>
+                            <TextBlock Text="Tipo="/>
+                            <TextBlock Text="{Binding PredioActual.IdTipoProceso}" Margin="8,0"/>
+                            <TextBlock Text="Etapa="/>
+                            <TextBlock Text="{Binding PredioActual.IdEtapaProcesal}" Margin="8,0"/>
+                        </StackPanel>
+
                         <GroupBox Header="Identificación">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -118,21 +148,27 @@
 
                                 <!-- Fila 0 -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="ID" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="0" Grid.Column="1" Text="{Binding PredioActual.ID}" Style="{StaticResource InputCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="1"
+                                         Text="{Binding PredioActual.ID, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputCell}"/>
 
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="FMI" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="0" Grid.Column="3" Text="{Binding PredioActual.FMI}" Style="{StaticResource InputCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="3"
+                                         Text="{Binding PredioActual.FMI, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputCell}"/>
 
                                 <!-- Fila 1 -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="No. Expediente" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="1" Grid.Column="1" Text="{Binding PredioActual.NoExpediente}" Style="{StaticResource InputCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                                         Text="{Binding PredioActual.NoExpediente, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputCell}"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Fuente" Style="{StaticResource LabelCell}"/>
-                                <ComboBox  Grid.Row="1" Grid.Column="3" Style="{StaticResource ComboCell}"
-                     ItemsSource="{Binding FuentesProceso}"
-                     DisplayMemberPath="Nombre"
-                     SelectedValuePath="Id"
-                     SelectedValue="{Binding PredioActual.IdFuenteProceso, Mode=TwoWay}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="3" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding FuentesProceso}"
+                                          DisplayMemberPath="Nombre"
+                                          SelectedValuePath="Id"
+                                          SelectedValue="{Binding PredioActual.IdFuenteProceso, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </Grid>
                         </GroupBox>
 
@@ -152,27 +188,27 @@
 
                                 <!-- Fila 0 -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo de proceso agrario" Style="{StaticResource LabelCell}"/>
-                                <ComboBox  Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
-										   ItemsSource="{Binding TipoProcesos}"
-										   DisplayMemberPath="Nombre"
-										   SelectedValuePath="Id"
-										   SelectedValue="{Binding PredioActual.IdTipoProceso, Mode=TwoWay}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding TipoProcesos}"
+                                          DisplayMemberPath="Nombre"
+                                          SelectedValuePath="Id"
+                                          SelectedValue="{Binding PredioActual.IdTipoProceso, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Etapa procesal" Style="{StaticResource LabelCell}"/>
-                                <ComboBox  Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
-										 ItemsSource="{Binding EtapasProcesales}"
-										 DisplayMemberPath="Nombre"
-										 SelectedValuePath="Id"
-										 SelectedValue="{Binding PredioActual.IdEtapaProcesal, Mode=TwoWay}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding EtapasProcesales}"
+                                          DisplayMemberPath="Nombre"
+                                          SelectedValuePath="Id"
+                                          SelectedValue="{Binding PredioActual.IdEtapaProcesal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                                 <!-- Fila 1 -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="ID ORFEO" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="1" Grid.Column="1" Style="{StaticResource InputCell}"
-											 Text="{Binding PredioActual.RadicadoOrfeo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource InputCell}"
+                                         Text="{Binding PredioActual.RadicadoOrfeo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Dependencia" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="1" Grid.Column="3" Style="{StaticResource InputCell}"
-											 Text="{Binding PredioActual.Dependencia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Style="{StaticResource InputCell}"
+                                         Text="{Binding PredioActual.Dependencia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                             </Grid>
                         </GroupBox>
 
@@ -181,234 +217,241 @@
             </TabItem>
 
             <!-- ======= 2) UBICACIÓN + TITULARIDAD ======= -->
-			<TabItem Header="Ubicación y Titularidad">
-				<ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
-					<StackPanel>
+            <TabItem Header="Ubicación y Titularidad">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                    <StackPanel>
 
-						<!-- UBICACIÓN REGISTRAL -->
-						<GroupBox Header="Ubicación registral">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-								</Grid.RowDefinitions>
+                        <!-- UBICACIÓN REGISTRAL -->
+                        <GroupBox Header="Ubicación registral">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-								<!-- Departamento -->
-								<TextBlock Grid.Row="0" Grid.Column="0" Text="Departamento" Style="{StaticResource LabelCell}"/>
-								<ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                <!-- Departamento -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Departamento" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Departamentos}"
-                                          SelectedItem="{Binding SelectedDepartamento, Mode=TwoWay}"
+                                          SelectedItem="{Binding SelectedDepartamento, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           DisplayMemberPath="Nombre"/>
 
-								<!-- Municipio -->
-								<TextBlock Grid.Row="0" Grid.Column="2" Text="Municipio" Style="{StaticResource LabelCell}"/>
-								<ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
+                                <!-- Municipio -->
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Municipio" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Municipios}"
-                                          SelectedItem="{Binding SelectedMunicipio, Mode=TwoWay}"
-                                          DisplayMemberPath="Nombre"/>
+                                          SelectedItem="{Binding SelectedMunicipio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          DisplayMemberPath="Nombre"
+                                          IsEditable="False"/>
 
-								<!-- Centro poblado -->
-								<TextBlock Grid.Row="1" Grid.Column="0" Text="Centro poblado" Style="{StaticResource LabelCell}"/>
-								<ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                <!-- Centro poblado -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Centro poblado" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding CentrosPoblados}"
-                                          SelectedItem="{Binding SelectedCentro, Mode=TwoWay}"
+                                          SelectedItem="{Binding SelectedCentro, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           DisplayMemberPath="Nombre"/>
 
-								<TextBlock Grid.Row="1" Grid.Column="2" Text="Círculo registral" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="1" Grid.Column="3" Text="{Binding PredioActual.CirculoRegistral}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Círculo registral" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3"
+                                         Text="{Binding PredioActual.CirculoRegistral, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="2" Grid.Column="0" Text="Área registral" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding PredioActual.AreaRegistral}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Área registral" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="1"
+                                         Text="{Binding PredioActual.AreaRegistral, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="2" Grid.Column="2" Text="Área calculada" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.AreaCalculada}" Style="{StaticResource InputCell}"/>
-							</Grid>
-						</GroupBox>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Área calculada" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3"
+                                         Text="{Binding PredioActual.AreaCalculada, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputCell}"/>
+                            </Grid>
+                        </GroupBox>
 
-						<!-- TITULARIDAD -->
-						<GroupBox Header="Titularidad y tradición">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-								</Grid.RowDefinitions>
+                        <!-- TITULARIDAD -->
+                        <GroupBox Header="Titularidad y tradición">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-								<!-- Fila 0 -->
-								<TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo de persona titular" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="0" Grid.Column="1" Text="{Binding PredioActual.PersonaTitular}" Style="{StaticResource InputCell}"/>
+                                <!-- Fila 0 -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo de persona titular" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PredioActual.PersonaTitular, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="0" Grid.Column="2" Text="Nombre propietario(s)" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="0" Grid.Column="3" Text="{Binding PredioActual.NombrePropietarios}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Nombre propietario(s)" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding PredioActual.NombrePropietarios, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
-								<!-- Fila 1 -->
-								<TextBlock Grid.Row="1" Grid.Column="2" Text="Apellido propietario(s)" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="1" Grid.Column="3" Text="{Binding PredioActual.ApellidoPropietario}" Style="{StaticResource InputCell}"/>
+                                <!-- Fila 1 -->
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Apellido propietario(s)" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding PredioActual.ApellidoPropietario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
-								<!-- Fila 2 -->
-								<TextBlock Grid.Row="2" Grid.Column="0" Text="Número identificación (CC/NIT)" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding PredioActual.NumeroIdentificacion}" Style="{StaticResource InputCell}"/>
+                                <!-- Fila 2 -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Número identificación (CC/NIT)" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PredioActual.NumeroIdentificacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="2" Grid.Column="2" Text="Título originario" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.TituloOriginario}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Acreditación de la propiedad" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.TituloOriginario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
-								<!-- Fila 3 -->
-								<TextBlock Grid.Row="3" Grid.Column="0" Text="Análisis naturaleza y última tradición" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
-                                           Text="{Binding PredioActual.AnalisisNaturalezaUltimaTradicion}"
-                                           Style="{StaticResource NoteBox}"/>
-							</Grid>
-						</GroupBox>
+                                <!-- Fila 3 -->
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Naturaleza jurídica del predio" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
+                                         Text="{Binding PredioActual.AnalisisNaturalezaUltimaTradicion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource NoteBox}"/>
+                            </Grid>
+                        </GroupBox>
 
-					</StackPanel>
-				</ScrollViewer>
-			</TabItem>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
-			<!-- ======= 3) GRAVÁMENES Y AFECTACIONES ======= -->
-			<TabItem Header="Gravámenes y afectaciones">
-				<ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
-					<StackPanel>
+            <!-- ======= 3) GRAVÁMENES Y AFECTACIONES ======= -->
+            <TabItem Header="Gravámenes y afectaciones">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                    <StackPanel>
 
-						<!-- 1. Gravámenes -->
-						<GroupBox Header="Gravámenes">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-								</Grid.RowDefinitions>
+                        <!-- 1. Gravámenes -->
+                        <GroupBox Header="Gravámenes">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-								<!-- Hipoteca -->
-								<TextBlock Grid.Row="0" Grid.Column="0" Text="Hipoteca (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
-										   ItemsSource="{Binding Medidas.ValoresSN}"
-										   SelectedItem="{Binding Medidas.Hipoteca.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-								<TextBlock Grid.Row="0" Grid.Column="2" Text="Anotación HIPOTECA" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="0" Grid.Column="3" Style="{StaticResource NoteBox}"
-										   Text="{Binding Medidas.Hipoteca.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <!-- Hipoteca -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Hipoteca (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Hipoteca.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Anotación HIPOTECA" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Hipoteca.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<!-- Servidumbres -->
-								<TextBlock Grid.Row="1" Grid.Column="0" Text="Servidumbres (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
-										   ItemsSource="{Binding Medidas.ValoresSN}"
-										   SelectedItem="{Binding Medidas.Servidumbres.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-								<TextBlock Grid.Row="1" Grid.Column="2" Text="Anotación SERVIDUMBRES" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="1" Grid.Column="3" Style="{StaticResource NoteBox}"
-										   Text="{Binding Medidas.Servidumbres.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <!-- Servidumbres -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Servidumbres (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Servidumbres.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Anotación SERVIDUMBRES" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Servidumbres.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<!-- Medidas cautelares -->
-								<TextBlock Grid.Row="2" Grid.Column="0" Text="Medidas cautelares (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
-										   ItemsSource="{Binding Medidas.ValoresSN}"
-										   SelectedItem="{Binding Medidas.MedidasCautelares.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-								<TextBlock Grid.Row="2" Grid.Column="2" Text="Anotación MEDIDAS CAUTELARES" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="2" Grid.Column="3" Style="{StaticResource NoteBox}"
-										   Text="{Binding Medidas.MedidasCautelares.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-							</Grid>
-						</GroupBox>
+                                <!-- Medidas cautelares -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Medidas cautelares (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.MedidasCautelares.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Anotación MEDIDAS CAUTELARES" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.MedidasCautelares.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Grid>
+                        </GroupBox>
 
-						<Separator Margin="0,15"/>
+                        <Separator Margin="0,15"/>
 
-						<GroupBox Header="RUPTA (Clasificación de Restitución de Tierras)">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-								</Grid.RowDefinitions>
+                        <GroupBox Header="RUPTA (Clasificación de Restitución de Tierras)">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-								<!-- Fila 0 -->
-								<TextBlock Grid.Row="0" Grid.Column="0" Text="RUPTA (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
-										   ItemsSource="{Binding Medidas.ValoresSN}"
-										   SelectedItem="{Binding Medidas.Rupta.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <!-- Fila 0 -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="RUPTA (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Rupta.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<TextBlock Grid.Row="0" Grid.Column="2" Text="Tipo clasificación" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
-											ItemsSource="{Binding Medidas.RuptaClasificacionOpciones}"
-											SelectedItem="{Binding Medidas.Rupta.TipoClasificacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Tipo clasificación" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.RuptaClasificacionOpciones}"
+                                          SelectedItem="{Binding Medidas.Rupta.TipoClasificacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<!-- Fila 1: Anotación -->
-								<TextBlock Grid.Row="1" Grid.Column="0" Text="Anotación RUPTA" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource NoteBox}"
-										   Text="{Binding Medidas.Rupta.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-							</Grid>
-						</GroupBox>
+                                <!-- Fila 1: Anotación -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Anotación RUPTA" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Rupta.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Grid>
+                        </GroupBox>
 
-						<Separator Margin="0,15"/>
+                        <Separator Margin="0,15"/>
 
-						<!-- 3. Otras afectaciones -->
-						<GroupBox Header="Otras afectaciones">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-								</Grid.RowDefinitions>
+                        <!-- 3. Otras afectaciones -->
+                        <GroupBox Header="Otras afectaciones">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-								<!-- RTDAF -->
-								<TextBlock Grid.Row="0" Grid.Column="0" Text="RTDAF Ley 1448 (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
-										   ItemsSource="{Binding Medidas.ValoresSN}"
-										   SelectedItem="{Binding Medidas.RTDAF.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-								<TextBlock Grid.Row="0" Grid.Column="2" Text="Anotación RTDAF" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="0" Grid.Column="3" Style="{StaticResource NoteBox}"
-										   Text="{Binding Medidas.RTDAF.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <!-- RTDAF -->
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="RTDAF Ley 1448 (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.RTDAF.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Anotación RTDAF" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.RTDAF.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<!-- Oferta -->
-								<TextBlock Grid.Row="1" Grid.Column="0" Text="Oferta otras entidades (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
-										   ItemsSource="{Binding Medidas.ValoresSN}"
-										   SelectedItem="{Binding Medidas.Oferta.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-								<TextBlock Grid.Row="1" Grid.Column="2" Text="Anotación OFERTA" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="1" Grid.Column="3" Style="{StaticResource NoteBox}"
-										   Text="{Binding Medidas.Oferta.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <!-- Oferta -->
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Oferta otras entidades (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Oferta.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Anotación OFERTA" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Oferta.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<!-- Clarificación -->
-								<TextBlock Grid.Row="2" Grid.Column="0" Text="Procesos de clarificación (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
-										   ItemsSource="{Binding Medidas.ValoresSN}"
-										   SelectedItem="{Binding Medidas.Clarificacion.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-								<TextBlock Grid.Row="2" Grid.Column="2" Text="Anotación CLARIFICACIÓN" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="2" Grid.Column="3" Style="{StaticResource NoteBox}"
-										   Text="{Binding Medidas.Clarificacion.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-							</Grid>
-						</GroupBox>
+                                <!-- Clarificación -->
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Procesos de clarificación (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Clarificacion.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Anotación CLARIFICACIÓN" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Clarificacion.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                            </Grid>
+                        </GroupBox>
 
-					</StackPanel>
-				</ScrollViewer>
-			</TabItem>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
             <!-- ======= 4) CONCEPTO JURÍDICO ======= -->
             <TabItem Header="Concepto jurídico">
@@ -429,21 +472,21 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Tiene informe jurídico previo" Style="{StaticResource LabelCell}"/>
-                                <CheckBox  Grid.Row="0" Grid.Column="1"
-										   IsChecked="{Binding TieneInformePrevio, Mode=TwoWay}"
-										   VerticalAlignment="Center"/>
+                                <CheckBox Grid.Row="0" Grid.Column="1"
+                                          IsChecked="{Binding PredioActual.CuentaConInformeJuridicoPrevio}"
+                                          VerticalAlignment="Center"/>
 
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Fecha informe previo" Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="0" Grid.Column="3"
-											SelectedDate="{Binding FechaInformePrevio, Mode=TwoWay}"
-											IsEnabled="{Binding TieneInformePrevio}"
-											Style="{StaticResource InputCell}"/>
+                                            SelectedDate="{Binding PredioActual.FechaInformePrevioReportada}"
+                                            IsEnabled="{Binding PredioActual.CuentaConInformeJuridicoPrevio}"
+                                            Style="{StaticResource InputCell}"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Concepto antiguo" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
-										   Text="{Binding ConceptoPrevio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-										   IsEnabled="{Binding TieneInformePrevio}"
-										   Style="{StaticResource NoteBox}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+                                         Text="{Binding PredioActual.ConceptoAntiguo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding PredioActual.CuentaConInformeJuridicoPrevio}"
+                                         Style="{StaticResource NoteBox}"/>
                             </Grid>
                         </GroupBox>
 
@@ -463,27 +506,31 @@
                                 </Grid.RowDefinitions>
 
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Análisis / Concepto final" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
-                                           Text="{Binding PredioActual.AnalisisJuridicoFinal}" Style="{StaticResource NoteBox}" MinHeight="100"/>
+                                <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                                         Text="{Binding PredioActual.AnalisisJuridicoFinal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource NoteBox}" MinHeight="100"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Fecha de informe" Style="{StaticResource LabelCell}"/>
-                                <DatePicker Grid.Row="1" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaInforme}" Style="{StaticResource InputCell}"/>
+                                <DatePicker Grid.Row="1" Grid.Column="1"
+                                            SelectedDate="{Binding PredioActual.FechaInforme}"
+                                            Style="{StaticResource InputCell}"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Viabilidad" Style="{StaticResource LabelCell}"/>
-                                <ComboBox  Grid.Row="1" Grid.Column="3"
-                                           ItemsSource="{Binding OpcionesViabilidad}"
-                                           SelectedItem="{Binding PredioActual.Viabilidad}"
-                                           Style="{StaticResource InputCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="3"
+                                          ItemsSource="{Binding OpcionesViabilidad}"
+                                          SelectedItem="{Binding PredioActual.Viabilidad, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Style="{StaticResource InputCell}"/>
 
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Tipo de informe" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="2" Grid.Column="1" Text="{Binding PredioActual.TipoInforme}" Style="{StaticResource InputCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PredioActual.TipoInforme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
                                 <TextBlock Grid.Row="2" Grid.Column="2" Text="Causal no viabilidad" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.CausalNoViabilidad}" Style="{StaticResource InputCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.CausalNoViabilidad, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
                                 <TextBlock Grid.Row="3" Grid.Column="0" Text="Insumos pendientes" Style="{StaticResource LabelCell}"/>
-                                <TextBox   Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
-                                           Text="{Binding PredioActual.InsumosPendientes}" Style="{StaticResource NoteBox}" MinHeight="70"/>
+                                <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
+                                         Text="{Binding PredioActual.InsumosPendientes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource NoteBox}" MinHeight="70"/>
                             </Grid>
                         </GroupBox>
 
@@ -492,106 +539,106 @@
             </TabItem>
 
             <!-- ======= 5) ASIGNACIÓN Y REVISIÓN ======= -->
-			<TabItem Header="Asignación y revisión">
-				<ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
-					<StackPanel>
+            <TabItem Header="Asignación y revisión">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                    <StackPanel>
 
-						<GroupBox Header="Asignación y revisión">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-								</Grid.RowDefinitions>
+                        <GroupBox Header="Asignación y revisión">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-								<TextBlock Grid.Row="0" Grid.Column="0" Text="Fecha entrega a revisor" Style="{StaticResource LabelCell}"/>
-								<DatePicker Grid.Row="0" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaEntregaARevisor}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Fecha entrega a revisor" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="0" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaEntregaARevisor}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="0" Grid.Column="2" Text="Abogado sustanciador asignado" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
-                                           ItemsSource="{Binding AbogadosSustanciadores}"
-                                           SelectedItem="{Binding PredioActual.AbogadoSustanciadorAsignado}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Abogado sustanciador asignado" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding AbogadosSustanciadores}"
+                                          SelectedItem="{Binding PredioActual.AbogadoSustanciadorAsignado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<TextBlock Grid.Row="1" Grid.Column="0" Text="Abogado revisor asignado" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
-                                           ItemsSource="{Binding AbogadosRevisores}"
-                                           SelectedItem="{Binding PredioActual.AbogadoRevisorAsignado}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Abogado revisor asignado" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding AbogadosRevisores}"
+                                          SelectedItem="{Binding PredioActual.AbogadoRevisorAsignado, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<TextBlock Grid.Row="1" Grid.Column="2" Text="# Reparto" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="1" Grid.Column="3" Text="{Binding PredioActual.NumeroReparto}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="# Reparto" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding PredioActual.NumeroReparto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="2" Grid.Column="0" Text="Fecha asignación reparto" Style="{StaticResource LabelCell}"/>
-								<DatePicker Grid.Row="2" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaAsignacionReparto}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fecha asignación reparto" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="2" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaAsignacionReparto}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="2" Grid.Column="2" Text="Plazo para entrega a revisor" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.PlazoParaEntregaARevisor}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Plazo para entrega a revisor" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.PlazoParaEntregaARevisor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="3" Grid.Column="0" Text="Estado revisión" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="3" Grid.Column="1" Style="{StaticResource ComboCell}"
-                                           ItemsSource="{Binding EstadosRevision}"
-                                           SelectedItem="{Binding PredioActual.EstadoRevision}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Estado revisión" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="3" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding EstadosRevision}"
+                                          SelectedItem="{Binding PredioActual.EstadoRevision, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<TextBlock Grid.Row="3" Grid.Column="2" Text="Observaciones revisor" Style="{StaticResource LabelCell}"/>
-								<TextBox   Grid.Row="3" Grid.Column="3"
-                                           Text="{Binding PredioActual.ObservacionesRevisor}"
-                                           Style="{StaticResource NoteBox}"/>
-							</Grid>
-						</GroupBox>
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="Observaciones revisor" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="3" Grid.Column="3"
+                                         Text="{Binding PredioActual.ObservacionesRevisor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource NoteBox}"/>
+                            </Grid>
+                        </GroupBox>
 
-						<GroupBox Header="Gestión documental / ORFEO">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="220"/>
-									<ColumnDefinition Width="*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-									<RowDefinition Height="Auto"/>
-								</Grid.RowDefinitions>
+                        <GroupBox Header="Gestión documental / ORFEO">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-								<TextBlock Grid.Row="0" Grid.Column="0" Text="Entregó carpeta de soportes" Style="{StaticResource LabelCell}"/>
-								<CheckBox  Grid.Row="0" Grid.Column="1" IsChecked="{Binding PredioActual.EntregoCarpetaSoportes}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Entregó carpeta de soportes" Style="{StaticResource LabelCell}"/>
+                                <CheckBox Grid.Row="0" Grid.Column="1" IsChecked="{Binding PredioActual.EntregoCarpetaSoportes}" VerticalAlignment="Center"/>
 
-								<TextBlock Grid.Row="0" Grid.Column="2" Text="Fecha envío a coordinación" Style="{StaticResource LabelCell}"/>
-								<DatePicker Grid.Row="0" Grid.Column="3" SelectedDate="{Binding PredioActual.FechaEnvioACoordinacion}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Fecha envío a coordinación" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="0" Grid.Column="3" SelectedDate="{Binding PredioActual.FechaEnvioACoordinacion}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="1" Grid.Column="0" Text="Estado aprobación coordinadora" Style="{StaticResource LabelCell}"/>
-								<ComboBox  Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
-                                           ItemsSource="{Binding EstadosAprobacion}"
-                                           SelectedItem="{Binding PredioActual.EstadoAprobacionCoordinadora}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Estado aprobación coordinadora" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding EstadosAprobacion}"
+                                          SelectedItem="{Binding PredioActual.EstadoAprobacionCoordinadora, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-								<TextBlock Grid.Row="1" Grid.Column="2" Text="Fecha remisión soportes a gestora" Style="{StaticResource LabelCell}"/>
-								<DatePicker Grid.Row="1" Grid.Column="3" SelectedDate="{Binding PredioActual.FechaRemisionSoportesGestoraDocumental}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Fecha remisión soportes a gestora" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="1" Grid.Column="3" SelectedDate="{Binding PredioActual.FechaRemisionSoportesGestoraDocumental}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="2" Grid.Column="0" Text="Fecha remisión informe a gestora" Style="{StaticResource LabelCell}"/>
-								<DatePicker Grid.Row="2" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaRemisionInformeGestoraDocumental}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fecha remisión informe a gestora" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="2" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaRemisionInformeGestoraDocumental}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="2" Grid.Column="2" Text="Fecha cargue inf. jurídico en ORFEO" Style="{StaticResource LabelCell}"/>
-								<DatePicker Grid.Row="2" Grid.Column="3" SelectedDate="{Binding PredioActual.FechaCargueInformeJuridicoEnExpteOrfeo}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Fecha cargue inf. jurídico en ORFEO" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="2" Grid.Column="3" SelectedDate="{Binding PredioActual.FechaCargueInformeJuridicoEnExpteOrfeo}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="3" Grid.Column="0" Text="Fecha cargue docs y soportes en ORFEO" Style="{StaticResource LabelCell}"/>
-								<DatePicker Grid.Row="3" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaCargueDocumentosYSoportesEnExpdteOrfeo}" Style="{StaticResource InputCell}"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Fecha cargue docs y soportes en ORFEO" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="3" Grid.Column="1" SelectedDate="{Binding PredioActual.FechaCargueDocumentosYSoportesEnExpdteOrfeo}" Style="{StaticResource InputCell}"/>
 
-								<TextBlock Grid.Row="3" Grid.Column="2" Text="Fecha gestión etapa SIT" Style="{StaticResource LabelCell}"/>
-								<DatePicker Grid.Row="3" Grid.Column="3" SelectedDate="{Binding PredioActual.FechaGestionEtapaSIT}" Style="{StaticResource InputCell}"/>
-							</Grid>
-						</GroupBox>
+                                <TextBlock Grid.Row="3" Grid.Column="2" Text="Fecha gestión etapa SIT" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="3" Grid.Column="3" SelectedDate="{Binding PredioActual.FechaGestionEtapaSIT}" Style="{StaticResource InputCell}"/>
+                            </Grid>
+                        </GroupBox>
 
-					</StackPanel>
-				</ScrollViewer>
-			</TabItem>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
-		</TabControl>
-	</DockPanel>
+        </TabControl>
+    </DockPanel>
 </Window>

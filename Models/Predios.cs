@@ -1,89 +1,152 @@
-﻿using System;
+﻿// Models/Predio.cs
+using AppPrediosDemo.Infrastructure;
+using System;
 
 namespace AppPrediosDemo.Models
 {
-    public class Predio
+    public class Predio : ViewModelBase
     {
         // Identificación
-        public string? ID { get; set; }
-        public string? FMI { get; set; }
-        public string? NoExpediente { get; set; }
+        private string? id;
+        public string? ID { get => id; set => Set(ref id, value); }
 
-        // Catálogos (guardamos Ids)
-        public int? IdFuenteProceso { get; set; }
-        public int? IdTipoProceso { get; set; }
-        public int? IdEtapaProcesal { get; set; }
+        private string? fmi;
+        public string? FMI { get => fmi; set => Set(ref fmi, value); }
 
-        // Libres
-        public string? RadicadoOrfeo { get; set; }   // ID ORFEO
-        public string? Dependencia { get; set; }     // Dependencia
+        private string? noExp;
+        public string? NoExpediente { get => noExp; set => Set(ref noExp, value); }
 
-        // Ubicación (cascada)
-        public string? Departamento { get; set; }
-        public string? Municipio { get; set; }
-        public string? CentroPoblado { get; set; }
+        private string? rad;
+        public string? RadicadoOrfeo { get => rad; set => Set(ref rad, value); }
 
-        public string? CirculoRegistral { get; set; }
-        public decimal? AreaRegistral { get; set; }
-        public decimal? AreaCalculada { get; set; }
+        private string? dep;
+        public string? Dependencia { get => dep; set => Set(ref dep, value); }
+
+        // Catálogos
+        private int? idFu;
+        public int? IdFuenteProceso { get => idFu; set => Set(ref idFu, value); }
+
+        private int? idTp;
+        public int? IdTipoProceso { get => idTp; set => Set(ref idTp, value); }
+
+        private int? idEt;
+        public int? IdEtapaProcesal { get => idEt; set => Set(ref idEt, value); }
+
+        // Ubicación
+        private string? dpto;
+        public string? Departamento { get => dpto; set => Set(ref dpto, value); }
+
+        private string? mun;
+        public string? Municipio { get => mun; set => Set(ref mun, value); }
+
+        private string? centro;
+        public string? CentroPoblado { get => centro; set => Set(ref centro, value); }
+
+        private string? cir;
+        public string? CirculoRegistral { get => cir; set => Set(ref cir, value); }
+
+        private decimal? ar;
+        public decimal? AreaRegistral { get => ar; set => Set(ref ar, value); }
+
+        private decimal? ac;
+        public decimal? AreaCalculada { get => ac; set => Set(ref ac, value); }
 
         // Titularidad
-        public string? PersonaTitular { get; set; }
-        public string? NombrePropietarios { get; set; }
-        public string? NumeroIdentificacion { get; set; }
-        public string? TituloOriginario { get; set; }
-        public string? AnalisisNaturalezaUltimaTradicion { get; set; }
+        private string? pt;
+        public string? PersonaTitular { get => pt; set => Set(ref pt, value); }
 
-        // Gravámenes
-        public bool Hipoteca_SiNo { get; set; }
-        public string? Hipoteca_Anotacion { get; set; }
-        public bool Servidumbres_SiNo { get; set; }
-        public string? Servidumbres_Anotacion { get; set; }
-        public bool MedidasCautelares_SiNo { get; set; }
-        public string? MedidasCautelares_Anotacion { get; set; }
+        private string? np;
+        public string? NombrePropietarios { get => np; set => Set(ref np, value); }
 
-        // RUPTA
-        public bool Rupta_SiNo { get; set; }
-        public string? Rupta_Anotacion { get; set; }
-        public string? Rupta_ColectivoIndividual { get; set; }
+        private string? ap;
+        public string? ApellidoPropietario { get => ap; set => Set(ref ap, value); }
 
-        // Otras afectaciones
-        public bool RTDAF_Ley1448_SiNo { get; set; }
-        public string? RTDAF_Anotacion { get; set; }
-        public bool OfertaOtrasEntidades_SiNo { get; set; }
-        public string? OfertaOtrasEntidades_Anotacion { get; set; }
-        public bool ProcesosClarificacion_SiNo { get; set; }
-        public string? ProcesosClarificacion_Anotacion { get; set; }
+        private string? ni;
+        public string? NumeroIdentificacion { get => ni; set => Set(ref ni, value); }
+
+        private string? to;
+        public string? TituloOriginario { get => to; set => Set(ref to, value); }
+
+        private string? an;
+        public string? AnalisisNaturalezaUltimaTradicion { get => an; set => Set(ref an, value); }
 
         // Concepto jurídico
-        public bool CuentaConInformeJuridicoPrevio { get; set; }
-        public DateTime? FechaInformePrevioReportada { get; set; }
-        public string? ConceptoAntiguo { get; set; }
-        public string? AnalisisJuridicoFinal { get; set; }
-        public DateTime? FechaInforme { get; set; }
-        public string? Viabilidad { get; set; }
-        public string? TipoInforme { get; set; }
-        public string? CausalNoViabilidad { get; set; }
-        public string? InsumosPendientes { get; set; }
+        private bool tienePrevio;
+        public bool CuentaConInformeJuridicoPrevio { get => tienePrevio; set => Set(ref tienePrevio, value); }
+
+        private DateTime? fechaPrevio;
+        public DateTime? FechaInformePrevioReportada { get => fechaPrevio; set => Set(ref fechaPrevio, value); }
+
+        private string? conceptoAntiguo;
+        public string? ConceptoAntiguo { get => conceptoAntiguo; set => Set(ref conceptoAntiguo, value); }
+
+        private string? analisisFinal;
+        public string? AnalisisJuridicoFinal { get => analisisFinal; set => Set(ref analisisFinal, value); }
+
+        private DateTime? fechaInf;
+        public DateTime? FechaInforme { get => fechaInf; set => Set(ref fechaInf, value); }
+
+        private string? viab;
+        public string? Viabilidad { get => viab; set => Set(ref viab, value); }
+
+        private string? tipoInf;
+        public string? TipoInforme { get => tipoInf; set => Set(ref tipoInf, value); }
+
+        private string? causalNV;
+        public string? CausalNoViabilidad { get => causalNV; set => Set(ref causalNV, value); }
+
+        private string? insPend;
+        public string? InsumosPendientes { get => insPend; set => Set(ref insPend, value); }
 
         // Asignación y revisión
-        public DateTime? FechaEntregaARevisor { get; set; }
-        public string? AbogadoSustanciadorAsignado { get; set; }
-        public string? AbogadoRevisorAsignado { get; set; }
-        public string? NumeroReparto { get; set; }
-        public DateTime? FechaAsignacionReparto { get; set; }
-        public string? PlazoParaEntregaARevisor { get; set; }
-        public string? EstadoRevision { get; set; }
-        public string? ObservacionesRevisor { get; set; }
+        private DateTime? fEntRev;
+        public DateTime? FechaEntregaARevisor { get => fEntRev; set => Set(ref fEntRev, value); }
 
-        // Gestión documental / ORFEO
-        public bool EntregoCarpetaSoportes { get; set; }
-        public DateTime? FechaEnvioACoordinacion { get; set; }
-        public string? EstadoAprobacionCoordinadora { get; set; }
-        public DateTime? FechaRemisionSoportesGestoraDocumental { get; set; }
-        public DateTime? FechaRemisionInformeGestoraDocumental { get; set; }
-        public DateTime? FechaCargueInformeJuridicoEnExpteOrfeo { get; set; }
-        public DateTime? FechaCargueDocumentosYSoportesEnExpdteOrfeo { get; set; }
-        public DateTime? FechaGestionEtapaSIT { get; set; }
+        private string? sust;
+        public string? AbogadoSustanciadorAsignado { get => sust; set => Set(ref sust, value); }
+
+        private string? rev;
+        public string? AbogadoRevisorAsignado { get => rev; set => Set(ref rev, value); }
+
+        private string? nroRep;
+        public string? NumeroReparto { get => nroRep; set => Set(ref nroRep, value); }
+
+        private DateTime? fAsigRep;
+        public DateTime? FechaAsignacionReparto { get => fAsigRep; set => Set(ref fAsigRep, value); }
+
+        private string? plazo;
+        public string? PlazoParaEntregaARevisor { get => plazo; set => Set(ref plazo, value); }
+
+        private string? estRev;
+        public string? EstadoRevision { get => estRev; set => Set(ref estRev, value); }
+
+        private string? obsRev;
+        public string? ObservacionesRevisor { get => obsRev; set => Set(ref obsRev, value); }
+
+        // Gestión documental
+        private bool entrego;
+        public bool EntregoCarpetaSoportes { get => entrego; set => Set(ref entrego, value); }
+
+        private DateTime? fCoord;
+        public DateTime? FechaEnvioACoordinacion { get => fCoord; set => Set(ref fCoord, value); }
+
+        private string? estAprob;
+        public string? EstadoAprobacionCoordinadora { get => estAprob; set => Set(ref estAprob, value); }
+
+        private DateTime? fRemSoportes;
+        public DateTime? FechaRemisionSoportesGestoraDocumental { get => fRemSoportes; set => Set(ref fRemSoportes, value); }
+
+        private DateTime? fRemInf;
+        public DateTime? FechaRemisionInformeGestoraDocumental { get => fRemInf; set => Set(ref fRemInf, value); }
+
+        private DateTime? fCargInf;
+        public DateTime? FechaCargueInformeJuridicoEnExpteOrfeo { get => fCargInf; set => Set(ref fCargInf, value); }
+
+        private DateTime? fCargDocs;
+        public DateTime? FechaCargueDocumentosYSoportesEnExpdteOrfeo { get => fCargDocs; set => Set(ref fCargDocs, value); }
+
+        private DateTime? fSit;
+        public DateTime? FechaGestionEtapaSIT { get => fSit; set => Set(ref fSit, value); }
     }
 }
+

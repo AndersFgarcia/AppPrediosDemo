@@ -3,19 +3,28 @@ using System.Windows.Input;
 
 namespace AppPrediosDemo.Infrastructure
 {
-	/// Comando simple para botones (Guardar, Nuevo, etc.)
-	public class RelayCommand : ICommand
-	{
-		private readonly Action _exec;
-		private readonly Func<bool>? _canExec;
+    public sealed class RelayCommand : ICommand
+    {
+        private readonly Action _execute;
+        private readonly Func<bool>? _canExecute;
 
-		public RelayCommand(Action exec, Func<bool>? canExec = null)
-		{ _exec = exec; _canExec = canExec; }
+        public RelayCommand(Action execute, Func<bool>? canExecute = null)
+        {
+            _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+            _canExecute = canExecute;
+        }
 
-		public bool CanExecute(object? parameter) => _canExec?.Invoke() ?? true;
-		public void Execute(object? parameter) => _exec();
+        public bool CanExecute(object? parameter) => _canExecute?.Invoke() ?? true;
 
-		public event EventHandler? CanExecuteChanged;
-		public void RaiseCanExecuteChanged() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-	}
+        public void Execute(object? parameter) => _execute();
+
+        // Usa CommandManager para que WPF reconsidere CanExecute automáticamente.
+        public event EventHandler? CanExecuteChanged
+        {
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
+        }
+
+        public void RaiseCanExecuteChanged() => CommandManager.InvalidateRequerySuggested();
+    }
 }

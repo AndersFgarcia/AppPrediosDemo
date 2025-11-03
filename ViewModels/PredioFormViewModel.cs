@@ -34,24 +34,55 @@ namespace AppPrediosDemo.ViewModels
     public class PredioFormViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         // ===== Estado =====
-        private Predio _predioActual = new();
+        private Predio? _prevPredio;
+        private Predio _predioActual;
+
         public Predio PredioActual
         {
             get => _predioActual;
-            set { if (Set(ref _predioActual, value)) ValidateAll(); }
+            set
+            {
+                if (Set(ref _predioActual, value))
+                {
+                    if (_prevPredio is INotifyPropertyChanged oldObs)
+                        oldObs.PropertyChanged -= OnPredioChanged;
+
+                    if (_predioActual is INotifyPropertyChanged newObs)
+                        newObs.PropertyChanged += OnPredioChanged;
+
+                    _prevPredio = _predioActual;
+
+                    ValidateAll();
+                    GuardarCommand.RaiseCanExecuteChanged();
+                    UpdateDebug();
+                }
+            }
         }
-        //nueva
+
         private static string K(string prop) => $"PredioActual.{prop}";
 
-        // Sub-VM para “Gravámenes y afectaciones”
+        // Sub-VM
         public MedidasProcesalesViewModel Medidas { get; } = new();
 
-        // ===== Catálogos (BD) =====
+        // ===== Busy =====
+        // 1) setter de IsBusy
+        private bool _isBusy;
+        public bool IsBusy
+        {
+            get => _isBusy;
+            private set
+            {
+                if (Set(ref _isBusy, value))
+                    GuardarCommand.RaiseCanExecuteChanged();
+            }
+        }
+
+        // ===== Catálogos =====
         public ObservableCollection<CatalogOption> TipoProcesos { get; } = new();
         public ObservableCollection<CatalogOption> FuentesProceso { get; } = new();
         public ObservableCollection<CatalogOption> EtapasProcesales { get; } = new();
 
-        // ===== Cascada ubicación (desde Localizacion) =====
+        // ===== Cascada ubicación =====
         public ObservableCollection<ItemCatalogo> Departamentos { get; } = new();
         public ObservableCollection<ItemCatalogo> Municipios { get; } = new();
         public ObservableCollection<CentroItem> CentrosPoblados { get; } = new();
@@ -65,12 +96,13 @@ namespace AppPrediosDemo.ViewModels
                 if (Set(ref _selectedDepartamento, value))
                 {
                     PredioActual.Departamento = value?.Nombre;
-                    PredioActual.Municipio = null;
-                    PredioActual.CentroPoblado = null;
                     SelectedMunicipio = null;
                     SelectedCentro = null;
+                    IdLocalizacionSeleccionada = null;
                     _ = CargarMunicipiosAsync(value);
                     ValidateLocalizacion();
+                    GuardarCommand.RaiseCanExecuteChanged();
+                    OnPropertyChanged(nameof(DebugInfo));
                 }
             }
         }
@@ -84,10 +116,12 @@ namespace AppPrediosDemo.ViewModels
                 if (Set(ref _selectedMunicipio, value))
                 {
                     PredioActual.Municipio = value?.Nombre;
-                    PredioActual.CentroPoblado = null;
                     SelectedCentro = null;
+                    IdLocalizacionSeleccionada = null;
                     _ = CargarCentrosPobladosAsync(SelectedDepartamento, value);
                     ValidateLocalizacion();
+                    GuardarCommand.RaiseCanExecuteChanged();
+                    OnPropertyChanged(nameof(DebugInfo));
                 }
             }
         }
@@ -101,13 +135,28 @@ namespace AppPrediosDemo.ViewModels
                 if (Set(ref _selectedCentro, value))
                 {
                     PredioActual.CentroPoblado = value?.Nombre;
+                    IdLocalizacionSeleccionada = value?.IdLocalizacion;
                     ValidateLocalizacion();
+                    GuardarCommand.RaiseCanExecuteChanged();
+                    OnPropertyChanged(nameof(DebugInfo));
                 }
             }
         }
 
-        // Para guardar luego en EstudioTerreno.IdLocalizacion
-        public int? IdLocalizacionSeleccionada => SelectedCentro?.IdLocalizacion;
+        // Antes era solo getter. Ahora con setter para notificar y habilitar Guardar.
+        private int? _idLocalizacionSeleccionada;
+        public int? IdLocalizacionSeleccionada
+        {
+            get => _idLocalizacionSeleccionada;
+            private set
+            {
+                if (Set(ref _idLocalizacionSeleccionada, value))
+                {
+                    GuardarCommand.RaiseCanExecuteChanged();
+                    OnPropertyChanged(nameof(DebugInfo));
+                }
+            }
+        }
 
         // ===== Listas mock varias =====
         public ObservableCollection<string> CirculosRegistrales { get; } = new();
@@ -119,15 +168,6 @@ namespace AppPrediosDemo.ViewModels
             new() { "Viable", "No viable", "Pendiente" };
 
         // ===== Buscador =====
-        private string? _filtroId;
-        public string? FiltroId { get => _filtroId; set => Set(ref _filtroId, value); }
-
-        private string? _filtroFmi;
-        public string? FiltroFmi { get => _filtroFmi; set => Set(ref _filtroFmi, value); }
-
-        private string? _filtroExpediente;
-        public string? FiltroExpediente { get => _filtroExpediente; set => Set(ref _filtroExpediente, value); }
-
         public ObservableCollection<PredioListado> ResultadosBusqueda { get; } = new();
 
         private PredioListado? _resultadoSeleccionado;
@@ -141,41 +181,85 @@ namespace AppPrediosDemo.ViewModels
             }
         }
 
+        public string? FiltroId { get => _filtroId; set { Set(ref _filtroId, value); } }
+        public string? FiltroFmi { get => _filtroFmi; set { Set(ref _filtroFmi, value); } }
+        public string? FiltroExpediente { get => _filtroExpediente; set { Set(ref _filtroExpediente, value); } }
+        private string? _filtroId, _filtroFmi, _filtroExpediente;
+
         // ===== Comandos =====
         public RelayCommand NuevoCommand { get; }
-        public RelayCommand GuardarCommand { get; }
+        public AsyncRelayCommand GuardarCommand { get; }
         public RelayCommand CancelarCommand { get; }
         public RelayCommand BuscarRegistrosCommand { get; }
         public RelayCommand LimpiarFiltrosCommand { get; }
 
+        // ===== Debug =====
+        private string _debugInfo = "";
+        public string DebugInfo
+        {
+            get => _debugInfo;
+            private set => Set(ref _debugInfo, value);
+        }
+        private void UpdateDebug()
+        {
+            DebugInfo =
+                $"HasErrors= {HasErrors}  |  IdLoc= {(IdLocalizacionSeleccionada?.ToString() ?? "-")}  |  " +
+                $"Fuente= {PredioActual.IdFuenteProceso?.ToString() ?? "-"}  |  " +
+                $"Tipo= {PredioActual.IdTipoProceso?.ToString() ?? "-"}  |  " +
+                $"Etapa= {PredioActual.IdEtapaProcesal?.ToString() ?? "-"}";
+        }
+
+        // ===== ctor =====
         public PredioFormViewModel()
         {
-            // Mocks
             CirculosRegistrales.Add("Círculo 01");
             CirculosRegistrales.Add("Círculo 02");
-
             AbogadosSustanciadores.Add("Abogada 1");
             AbogadosSustanciadores.Add("Abogado 2");
-
             AbogadosRevisores.Add("Revisor 1");
             AbogadosRevisores.Add("Revisor 2");
-
             EstadosRevision.Add("Aprobado");
             EstadosRevision.Add("Devuelto");
             EstadosRevision.Add("En revisión");
-
             EstadosAprobacion.Add("Aprobado");
             EstadosAprobacion.Add("Observado");
             EstadosAprobacion.Add("Rechazado");
 
             NuevoCommand = new RelayCommand(Nuevo, () => true);
-            GuardarCommand = new RelayCommand(Guardar, () => !HasErrors);
+            GuardarCommand = new AsyncRelayCommand(GuardarAsync, PuedeGuardar);
             CancelarCommand = new RelayCommand(Cancelar, () => true);
             BuscarRegistrosCommand = new RelayCommand(async () => await BuscarAsync(), () => true);
             LimpiarFiltrosCommand = new RelayCommand(LimpiarFiltros, () => true);
+            PredioActual = new Predio();
 
-            _ = LoadAsync();
+            ErrorsChanged += (_, __) => { GuardarCommand.RaiseCanExecuteChanged(); UpdateDebug(); };
+            UpdateDebug();
+        }
+
+        // Llamar desde MainWindow.Loaded
+        public async Task InitializeAsync()
+        {
+            await LoadAsync();
             ValidateAll();
+            GuardarCommand.RaiseCanExecuteChanged();
+            UpdateDebug();
+        }
+
+        // ===== Guardar: requisitos mínimos =====
+        private bool PuedeGuardar()
+        {
+            // No dependas de HasErrors para habilitar botón. Solo los mínimos.
+            bool ok =
+                !string.IsNullOrWhiteSpace(PredioActual.ID) &&
+                !string.IsNullOrWhiteSpace(PredioActual.FMI) &&
+                PredioActual.IdFuenteProceso.GetValueOrDefault() > 0 &&
+                PredioActual.IdTipoProceso.GetValueOrDefault() > 0 &&
+                PredioActual.IdEtapaProcesal.GetValueOrDefault() > 0 &&
+                IdLocalizacionSeleccionada.HasValue &&
+                PredioActual.AreaRegistral.HasValue &&
+                PredioActual.AreaCalculada.HasValue;
+
+            return ok;
         }
 
         private async Task LoadAsync()
@@ -238,13 +322,12 @@ namespace AppPrediosDemo.ViewModels
             Rellenar(EtapasProcesales, data);
         }
 
-        // ===== Localización en cascada =====
+        // ===== Localización =====
         private async Task CargarDepartamentosAsync()
         {
             try
             {
                 using var ctx = new ViabilidadContext();
-
                 var raw = await ctx.Localizacions
                     .AsNoTracking()
                     .Select(x => new { x.CodigoDepartamento, x.NombreDepartamento })
@@ -260,7 +343,9 @@ namespace AppPrediosDemo.ViewModels
                 CentrosPoblados.Clear();
                 SelectedMunicipio = null;
                 SelectedCentro = null;
+                IdLocalizacionSeleccionada = null;
                 ValidateLocalizacion();
+                UpdateDebug();
             }
             catch (Exception ex)
             {
@@ -276,11 +361,11 @@ namespace AppPrediosDemo.ViewModels
                 CentrosPoblados.Clear();
                 SelectedMunicipio = null;
                 SelectedCentro = null;
+                IdLocalizacionSeleccionada = null;
 
-                if (departamento is null) { ValidateLocalizacion(); return; }
+                if (departamento is null) { ValidateLocalizacion(); UpdateDebug(); return; }
 
                 using var ctx = new ViabilidadContext();
-
                 var raw = await ctx.Localizacions
                     .AsNoTracking()
                     .Where(x => x.CodigoDepartamento == departamento.Codigo)
@@ -293,6 +378,7 @@ namespace AppPrediosDemo.ViewModels
                     Municipios.Add(new ItemCatalogo(r.CodigoMunicipio, r.NombreMunicipio));
 
                 ValidateLocalizacion();
+                UpdateDebug();
             }
             catch (Exception ex)
             {
@@ -306,11 +392,11 @@ namespace AppPrediosDemo.ViewModels
             {
                 CentrosPoblados.Clear();
                 SelectedCentro = null;
+                IdLocalizacionSeleccionada = null;
 
-                if (departamento is null || municipio is null) { ValidateLocalizacion(); return; }
+                if (departamento is null || municipio is null) { ValidateLocalizacion(); UpdateDebug(); return; }
 
                 using var ctx = new ViabilidadContext();
-
                 var raw = await ctx.Localizacions
                     .AsNoTracking()
                     .Where(x => x.CodigoDepartamento == departamento.Codigo &&
@@ -323,6 +409,7 @@ namespace AppPrediosDemo.ViewModels
                     CentrosPoblados.Add(new CentroItem(r.CodigoCentroPoblado, r.NombreCentroPoblado, r.IdLocalizacion));
 
                 ValidateLocalizacion();
+                UpdateDebug();
             }
             catch (Exception ex)
             {
@@ -343,55 +430,52 @@ namespace AppPrediosDemo.ViewModels
             if (!_errors.TryGetValue(prop, out var list)) { list = new List<string>(); _errors[prop] = list; }
             if (!list.Contains(message)) list.Add(message);
             ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(prop));
-            GuardarCommand.RaiseCanExecuteChanged();
         }
         private void ClearErrors(string prop)
         {
             if (_errors.Remove(prop))
-            {
                 ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(prop));
-                GuardarCommand.RaiseCanExecuteChanged();
-            }
         }
 
         private void ValidateLocalizacion()
         {
-            // Usamos esta clave asumiendo que el error se enlaza a una propiedad del ViewModel padre.
             const string key = nameof(IdLocalizacionSeleccionada);
-            // ✅ CLAVE: Limpiar los errores de la propiedad antes de revalidar
             ClearErrors(key);
-            if (SelectedDepartamento is null || SelectedMunicipio is null || SelectedCentro is null)
+            if (!IdLocalizacionSeleccionada.HasValue)
                 AddError(key, "Seleccione departamento, municipio y centro poblado.");
+            GuardarCommand.RaiseCanExecuteChanged();
         }
 
         public void ValidateAll()
         {
-            // IdPostulacion
             ValidateRequiredMaxLen(K(nameof(PredioActual.ID)), PredioActual.ID, 30);
-            // si es solo numérico:
-            //ValidateRegex(K(nameof(PredioActual.ID)), PredioActual.ID, @"^\d{1,30}$", "Solo dígitos.");
-
-            // FMI
             ValidateRequiredMaxLen(K(nameof(PredioActual.FMI)), PredioActual.FMI, 100);
 
-            // Áreas
+            if (!string.IsNullOrWhiteSpace(PredioActual.NumeroIdentificacion))
+            {
+                ValidateRegex(
+                    K(nameof(PredioActual.NumeroIdentificacion)),
+                    PredioActual.NumeroIdentificacion,
+                    @"^\d{1,19}([.-]?\d{1,19})*$",
+                    "Ingrese solo números (opcional . o -).");
+            }
+
             ValidateDecimalReq(K(nameof(PredioActual.AreaRegistral)), PredioActual.AreaRegistral);
             ValidateDecimalReq(K(nameof(PredioActual.AreaCalculada)), PredioActual.AreaCalculada);
 
-            // === 4. Catálogos (FKs) ===
-            // Criterios: Requerido (ID > 0)
             ValidateCatalogo(K(nameof(PredioActual.IdFuenteProceso)), PredioActual.IdFuenteProceso);
             ValidateCatalogo(K(nameof(PredioActual.IdTipoProceso)), PredioActual.IdTipoProceso);
             ValidateCatalogo(K(nameof(PredioActual.IdEtapaProcesal)), PredioActual.IdEtapaProcesal);
 
-            // Criterio: IdLocalizacionSeleccionada no nulo (Debe invocar a la versión ajustada)
             ValidateLocalizacion();
+            UpdateDebug();
         }
+
         private void ValidateRequiredMaxLen(string key, string? value, int maxLen)
         {
             ClearErrors(key);
             if (string.IsNullOrWhiteSpace(value)) { AddError(key, "Campo obligatorio."); return; }
-            if (value.Length > maxLen) AddError(key, $"Longitud máxima {maxLen} caracteres.");
+            if (value.Length > maxLen) AddError(key, $"Longitud máxima {maxLen}.");
         }
 
         private void ValidateRegex(string key, string? value, string pattern, string msg)
@@ -401,7 +485,6 @@ namespace AppPrediosDemo.ViewModels
                 AddError(key, msg);
         }
 
-        // 📚 Valida que se haya seleccionado un ítem de un catálogo (ID > 0)
         private void ValidateCatalogo(string key, int? value)
         {
             ClearErrors(key);
@@ -426,18 +509,123 @@ namespace AppPrediosDemo.ViewModels
             SelectedCentro = null;
             Municipios.Clear();
             CentrosPoblados.Clear();
+            IdLocalizacionSeleccionada = null;
             ResultadosBusqueda.Clear();
             ResultadoSeleccionado = null;
-            ValidateLocalizacion();
+            ValidateAll();
+            GuardarCommand.RaiseCanExecuteChanged();
+            UpdateDebug();
         }
 
-        private void Guardar()
+        private async Task GuardarAsync()
         {
+            MessageBox.Show("Entró a GuardarAsync"); // probe 1
             ValidateAll();
-            if (HasErrors) return;
-            // var idLoc = IdLocalizacionSeleccionada!.Value; // usar para EstudioTerreno.IdLocalizacion
-            // Medidas.ToEntities(idEstudioTerreno) -> INSERT en Postulacion.MedidaProcesal
+            var diag = $"HasErrors={HasErrors}  IdLoc={IdLocalizacionSeleccionada}  " +
+                       $"Fuente={PredioActual.IdFuenteProceso}  Tipo={PredioActual.IdTipoProceso}  Etapa={PredioActual.IdEtapaProcesal}  " +
+                       $"AreaReg={PredioActual.AreaRegistral}  AreaCalc={PredioActual.AreaCalculada}";
+            MessageBox.Show(diag); // probe 2
+
+            if (HasErrors || IdLocalizacionSeleccionada is null)
+            {
+                MessageBox.Show("No guarda: validación.");
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                // BYPASS del servicio para aislar problemas.
+                var medidas = Medidas.ToEntities(0);
+
+                await using var ctx = new ViabilidadContext();
+                await using var tx = await ctx.Database.BeginTransactionAsync();
+
+                // RegistroProceso
+                var rp = new RegistroProceso
+                {
+                    IdPostulacion = PredioActual.ID!,
+                    FMI = PredioActual.FMI!,
+                    NumeroExpediente = PredioActual.NoExpediente,
+                    IdFuenteProceso = PredioActual.IdFuenteProceso!.Value,
+                    IdTipoProceso = PredioActual.IdTipoProceso!.Value,
+                    IdEtapaProcesal = PredioActual.IdEtapaProcesal!.Value,
+                    RadicadoOrfeo = PredioActual.RadicadoOrfeo,
+                    Dependencia = PredioActual.Dependencia
+                };
+                ctx.RegistroProcesos.Add(rp);
+                var n1 = await ctx.SaveChangesAsync(); // probe 3
+                MessageBox.Show($"Save1 cambios={n1}  IdRegistro={rp.IdRegistroProceso}");
+
+                // EstudioTerreno
+                var et = new EstudioTerreno
+                {
+                    IdRegistroProceso = rp.IdRegistroProceso,
+                    IdLocalizacion = IdLocalizacionSeleccionada.Value,
+                    AreaRegistral = PredioActual.AreaRegistral!.Value,
+                    AreaCalculada = PredioActual.AreaCalculada!.Value,
+                    CirculoRegistral = PredioActual.CirculoRegistral,
+
+                    TipoPersonaTitular = PredioActual.PersonaTitular,
+                    NombrePropietario = PredioActual.NombrePropietarios,
+                    ApellidoPropietario = PredioActual.ApellidoPropietario,
+                    Identificacion = string.IsNullOrWhiteSpace(PredioActual.NumeroIdentificacion)
+                                          ? null
+                                          : long.Parse(new string(PredioActual
+                                                                    .NumeroIdentificacion
+                                                                    .Where(char.IsDigit)
+                                                                    .ToArray())),
+
+                    // NUEVO: mapeo a columnas de BD
+                    NaturalezaJuridica = PredioActual.AnalisisNaturalezaUltimaTradicion,
+                    AcreditacionPropiedad = PredioActual.TituloOriginario
+                };
+                ctx.EstudioTerrenos.Add(et);
+                var n2 = await ctx.SaveChangesAsync(); // probe 4
+                MessageBox.Show($"Save2 cambios={n2}  IdEstudio={et.IdEstudioTerreno}");
+
+                // Medidas
+                foreach (var m in medidas)
+                {
+                    m.IdEstudioTerreno = et.IdEstudioTerreno;
+                    ctx.MedidaProcesals.Add(m);
+                }
+                var n3 = await ctx.SaveChangesAsync(); // probe 5
+
+                // Concepto previo si aplica
+                if (PredioActual.CuentaConInformeJuridicoPrevio)
+                {
+                    var cp = new ConceptosPrevio
+                    {
+                        IdRegistroProceso = rp.IdRegistroProceso,
+                        FechaInforme = PredioActual.FechaInformePrevioReportada,
+                        Concepto = PredioActual.ConceptoAntiguo
+                    };
+                    ctx.ConceptosPrevios.Add(cp);
+                    var n4 = await ctx.SaveChangesAsync(); // probe 6
+                    MessageBox.Show($"Save3 medidas={n3}  concepto={n4}");
+                }
+
+                await tx.CommitAsync();
+
+                MessageBox.Show($"OK. IdRegistroProceso={rp.IdRegistroProceso}");
+                Nuevo();
+                ValidateAll();
+            }
+            catch (DbUpdateException dbEx)
+            {
+                MessageBox.Show("Error de BD:\n" + dbEx.GetBaseException().Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error no controlado:\n" + ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
+        
 
         private void Cancelar() => PredioActual = _backup;
 
@@ -446,7 +634,6 @@ namespace AppPrediosDemo.ViewModels
         {
             try
             {
-                // 1. Validar filtros vacíos (se mantiene igual)
                 if (string.IsNullOrWhiteSpace(FiltroId) &&
                     string.IsNullOrWhiteSpace(FiltroFmi) &&
                     string.IsNullOrWhiteSpace(FiltroExpediente))
@@ -456,30 +643,19 @@ namespace AppPrediosDemo.ViewModels
                 }
 
                 using var ctx = new ViabilidadContext();
-
-                // 2. ✅ CORRECCIÓN: Definición de 'q' sin los Includes (Mejor rendimiento inicial)
                 var q = ctx.RegistroProcesos.AsNoTracking().AsQueryable();
 
-                // 3. ✅ CORRECCIÓN ID: Busca por IdPostulacion (VARCHAR) y usa StartsWith.
                 if (!string.IsNullOrWhiteSpace(FiltroId))
                     q = q.Where(x => x.IdPostulacion.StartsWith(FiltroId));
-
-                // 4. ✅ CORRECCIÓN FMI: Usa StartsWith.
                 if (!string.IsNullOrWhiteSpace(FiltroFmi))
                     q = q.Where(x => x.FMI.StartsWith(FiltroFmi));
-
-                // 5. ✅ CORRECCIÓN EXPEDIENTE: Usa StartsWith.
                 if (!string.IsNullOrWhiteSpace(FiltroExpediente))
                     q = q.Where(x => x.NumeroExpediente != null && x.NumeroExpediente.StartsWith(FiltroExpediente));
 
-                // 6. Ejecución de la consulta
                 var data = await q
-                    // ⚠️ Se reintroducen los Includes aquí para que el Select funcione correctamente,
-                    // pero después de haber aplicado los filtros.
                     .Include(x => x.IdFuenteProcesoNavigation)
                     .Include(x => x.IdTipoProcesoNavigation)
                     .Include(x => x.IdEtapaProcesalNavigation)
-
                     .OrderByDescending(x => x.IdRegistroProceso)
                     .Take(5)
                     .Select(x => new PredioListado(
@@ -510,7 +686,6 @@ namespace AppPrediosDemo.ViewModels
             {
                 using var ctx = new ViabilidadContext();
 
-                // RegistroProceso + últimos EstudioTerreno y su Localizacion
                 var rp = await ctx.RegistroProcesos
                     .AsNoTracking()
                     .FirstOrDefaultAsync(x => x.IdRegistroProceso == idRegistroProceso);
@@ -535,8 +710,8 @@ namespace AppPrediosDemo.ViewModels
                         .FirstOrDefaultAsync(x => x.IdLocalizacion == et.IdLocalizacion);
                 }
 
-                // Poblar Identificación
-                PredioActual.ID = rp.IdRegistroProceso.ToString();
+                // === RegistroProceso -> Predio ===
+                PredioActual.ID = rp.IdPostulacion;
                 PredioActual.FMI = rp.FMI;
                 PredioActual.NoExpediente = rp.NumeroExpediente;
                 PredioActual.IdFuenteProceso = rp.IdFuenteProceso;
@@ -545,15 +720,28 @@ namespace AppPrediosDemo.ViewModels
                 PredioActual.RadicadoOrfeo = rp.RadicadoOrfeo;
                 PredioActual.Dependencia = rp.Dependencia;
 
-                // Poblar EstudioTerreno básicos
+                // === EstudioTerreno -> Predio ===
                 if (et is not null)
                 {
                     PredioActual.AreaRegistral = et.AreaRegistral;
                     PredioActual.AreaCalculada = et.AreaCalculada;
                     PredioActual.CirculoRegistral = et.CirculoRegistral;
+
+                    // 🔹 Nuevos mapeos:
+                    PredioActual.TituloOriginario = et.AcreditacionPropiedad;
+                    PredioActual.AnalisisNaturalezaUltimaTradicion = et.NaturalezaJuridica;
+
+                    // Medidas asociadas
+                    var medidas = await ctx.MedidaProcesals
+                        .AsNoTracking()
+                        .Where(m => m.IdEstudioTerreno == et.IdEstudioTerreno)
+                        .ToListAsync();
+
+                    if (medidas.Count > 0)
+                        Medidas.LoadFrom(medidas);
                 }
 
-                // Seleccionar Localización en cascada
+                // === Localización en cascada ===
                 if (loc is not null)
                 {
                     var dep = Departamentos.FirstOrDefault(d => d.Codigo == loc.CodigoDepartamento);
@@ -567,29 +755,23 @@ namespace AppPrediosDemo.ViewModels
                         {
                             await CargarCentrosPobladosAsync(dep, mun);
                             var cen = CentrosPoblados.FirstOrDefault(c =>
-                                c.Codigo == loc.CodigoCentroPoblado && c.IdLocalizacion == loc.IdLocalizacion);
+                                c.Codigo == loc.CodigoCentroPoblado &&
+                                c.IdLocalizacion == loc.IdLocalizacion);
                             SelectedCentro = cen;
                         }
                     }
                 }
 
-                // Cargar Medidas procesales (si existen)
-                if (et is not null)
-                {
-                    var medidas = await ctx.MedidaProcesals
-                        .AsNoTracking()
-                        .Where(m => m.IdEstudioTerreno == et.IdEstudioTerreno)
-                        .ToListAsync();
-
-                    if (medidas.Count > 0)
-                        Medidas.LoadFrom(medidas);
-                }
+                ValidateAll();
+                GuardarCommand.RaiseCanExecuteChanged();
+                UpdateDebug();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("CargarPredioDesdeRegistroAsync:\n" + ex.Message);
             }
         }
+
 
         private void LimpiarFiltros()
         {
@@ -598,6 +780,52 @@ namespace AppPrediosDemo.ViewModels
             FiltroExpediente = null;
             ResultadosBusqueda.Clear();
             ResultadoSeleccionado = null;
+        }
+
+        // ===== Predio change hook =====
+        private void OnPredioChanged(object? s, PropertyChangedEventArgs e)
+        {
+            switch (e.PropertyName)
+            {
+                case nameof(Predio.ID):
+                    ValidateRequiredMaxLen(K(nameof(PredioActual.ID)), PredioActual.ID, 30);
+                    break;
+
+                case nameof(Predio.FMI):
+                    ValidateRequiredMaxLen(K(nameof(PredioActual.FMI)), PredioActual.FMI, 100);
+                    break;
+
+                case nameof(Predio.AreaRegistral):
+                    ValidateDecimalReq(K(nameof(PredioActual.AreaRegistral)), PredioActual.AreaRegistral);
+                    break;
+
+                case nameof(Predio.AreaCalculada):
+                    ValidateDecimalReq(K(nameof(PredioActual.AreaCalculada)), PredioActual.AreaCalculada);
+                    break;
+
+                case nameof(Predio.NumeroIdentificacion):
+                    if (!string.IsNullOrWhiteSpace(PredioActual.NumeroIdentificacion))
+                        ValidateRegex(
+                            K(nameof(PredioActual.NumeroIdentificacion)),
+                            PredioActual.NumeroIdentificacion,
+                            @"^\d{1,19}([.-]?\d{1,19})*$",
+                            "Ingrese solo números (opcional . o -).");
+                    else
+                        ClearErrors(K(nameof(PredioActual.NumeroIdentificacion)));
+                    break;
+
+                case nameof(Predio.IdFuenteProceso):
+                case nameof(Predio.IdTipoProceso):
+                case nameof(Predio.IdEtapaProcesal):
+                    ValidateCatalogo(K(e.PropertyName!), (int?)typeof(Predio).GetProperty(e.PropertyName!)?.GetValue(PredioActual));
+                    break;
+
+                default:
+                    break;
+            }
+
+            GuardarCommand.RaiseCanExecuteChanged();
+            UpdateDebug();
         }
     }
 }

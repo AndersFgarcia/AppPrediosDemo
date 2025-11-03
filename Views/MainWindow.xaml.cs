@@ -8,29 +8,42 @@ namespace AppPrediosDemo
 {
     public partial class MainWindow : Window
     {
+        private readonly PredioFormViewModel _vm;
+
         public MainWindow()
         {
-            InitializeComponent();                 // carga XAML y recursos
-            DataContext = new PredioFormViewModel();
+            InitializeComponent();
+
+            // Instancia del VM (el constructor del VM NO toca la BD)
+            _vm = new PredioFormViewModel();
+            DataContext = _vm;
+
+            // Carga de catálogos/cascadas SOLO en tiempo de ejecución (no en diseñador)
+            Loaded += async (_, __) =>
+            {
+                try
+                {
+                    await _vm.InitializeAsync(); // adentro llama LoadAsync() y luego ValidateAll()
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Init:\n" + ex.Message, "Inicialización", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            };
         }
 
+        // ====================== UTILIDADES DE PRUEBA (OPCIONAL, NO SE INVOCAN) ======================
         private void ProbarConexionBD()
         {
             try
             {
                 using var db = new ViabilidadContext();
-
                 var tipos = db.TipoProcesos.Take(5).ToList();
-                if (tipos.Count > 0)
-                {
-                    string msg = "Conexión OK.\n\nTipos de proceso:\n" +
-                                 string.Join("\n", tipos.Select(t => t.NombreTipoProceso));
-                    MessageBox.Show(msg, "Prueba de conexión");
-                }
-                else
-                {
-                    MessageBox.Show("Conexión OK, pero TipoProceso está vacío.", "Prueba de conexión");
-                }
+
+                string msg = tipos.Count > 0
+                    ? "Conexión OK.\n\nTipos de proceso:\n" + string.Join("\n", tipos.Select(t => t.NombreTipoProceso))
+                    : "Conexión OK, pero TipoProceso está vacío.";
+                MessageBox.Show(msg, "Prueba de conexión");
             }
             catch (Exception ex)
             {
@@ -44,7 +57,6 @@ namespace AppPrediosDemo
             {
                 using var ctx = new ViabilidadContext();
 
-                // Ids de catálogos y localización existentes
                 int fuenteId = ctx.FuenteProcesos.Select(x => x.IdFuenteProceso).FirstOrDefault();
                 int tipoId = ctx.TipoProcesos.Select(x => x.IdTipoProceso).FirstOrDefault();
                 int etapaId = ctx.EtapaProcesals.Select(x => x.IdEtapaProcesal).FirstOrDefault();

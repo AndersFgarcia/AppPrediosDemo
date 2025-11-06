@@ -23,7 +23,7 @@ public partial class EstudioTerreno
     public int IdLocalizacion { get; set; }
 
     [Column(TypeName = "numeric(18, 4)")]
-    public decimal AreaRegistral { get; set; }
+    public decimal? AreaRegistral { get; set; }
 
     [StringLength(100)]
     [Unicode(false)]

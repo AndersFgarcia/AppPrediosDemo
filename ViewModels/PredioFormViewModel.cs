@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
+
 namespace AppPrediosDemo.ViewModels
 {
     public sealed class CatalogOption
@@ -19,23 +20,35 @@ namespace AppPrediosDemo.ViewModels
         public override string ToString() => Nombre;
     }
 
+    public enum ModoFormulario
+    {
+        Ninguno,   // solo lectura, campos deshabilitados
+        Nuevo,     // creando registro, campos habilitados, Guardar ejecuta INSERT
+        Edicion    // editando uno existente, campos habilitados, Guardar ejecuta UPDATE
+    }
+
     public sealed record ItemCatalogo(int Codigo, string Nombre);
     public sealed record CentroItem(int Codigo, string Nombre, int IdLocalizacion);
 
     public sealed record PredioListado(
-        long IdRegistroProceso,
+        long IdRegistroProceso,          // interno, para cargar el registro
+        string IdPostulacion,            // este es el ID que verás en la grilla
         string FMI,
         string? NumeroExpediente,
-        string? Fuente,
-        string? Tipo,
-        string? Etapa
+        string? AbogadoSustanciador,
+        string? AbogadoRevisor,
+        DateTime? FechaAsignacionReparto,
+        DateTime? FechaEntregaARevisor
     );
+
 
     public class PredioFormViewModel : ViewModelBase, INotifyDataErrorInfo
     {
         // ===== Estado =====
         private Predio? _prevPredio;
-        private Predio _predioActual;
+        private Predio _predioActual = new();
+
+        private long? _idRegistroActual; // ID del registro que se edita.
 
         public Predio PredioActual
         {
@@ -59,13 +72,30 @@ namespace AppPrediosDemo.ViewModels
             }
         }
 
-        private static string K(string prop) => $"PredioActual.{prop}";
+        private ModoFormulario _modo = ModoFormulario.Ninguno;
+        public ModoFormulario Modo
+        {
+            get => _modo;
+            private set
+            {
+                if (Set(ref _modo, value))
+                {
+                    OnPropertyChanged(nameof(PuedeEditarCampos));
+                    GuardarCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        // Para bindings de IsEnabled / IsReadOnly
+        public bool PuedeEditarCampos =>
+            Modo == ModoFormulario.Nuevo || Modo == ModoFormulario.Edicion;
+
+        private static string K(string prop) => prop;
 
         // Sub-VM
         public MedidasProcesalesViewModel Medidas { get; } = new();
 
         // ===== Busy =====
-        // 1) setter de IsBusy
         private bool _isBusy;
         public bool IsBusy
         {
@@ -143,7 +173,6 @@ namespace AppPrediosDemo.ViewModels
             }
         }
 
-        // Antes era solo getter. Ahora con setter para notificar y habilitar Guardar.
         private int? _idLocalizacionSeleccionada;
         public int? IdLocalizacionSeleccionada
         {
@@ -158,14 +187,16 @@ namespace AppPrediosDemo.ViewModels
             }
         }
 
-        // ===== Listas mock varias =====
-        public ObservableCollection<string> CirculosRegistrales { get; } = new();
-        public ObservableCollection<string> AbogadosSustanciadores { get; } = new();
-        public ObservableCollection<string> AbogadosRevisores { get; } = new();
-        public ObservableCollection<string> EstadosRevision { get; } = new();
-        public ObservableCollection<string> EstadosAprobacion { get; } = new();
+        // ===== Listas varias =====
         public ObservableCollection<string> OpcionesViabilidad { get; } =
-            new() { "Viable", "No viable", "Pendiente" };
+            new() { "Sin definir", "Pendiente", "Viable", "Viabilidad parcial", "No viable" };
+
+        // Catálogos ConceptoFinal
+        public ObservableCollection<CatalogOption> TiposInforme { get; } = new();
+        public ObservableCollection<CatalogOption> TiposEstadoRevision { get; } = new();
+
+        public ObservableCollection<string> OpcionesEntregaCarpeta { get; } =
+            new() { "", "SI", "NO", "PENDIENTE" };
 
         // ===== Buscador =====
         public ObservableCollection<PredioListado> ResultadosBusqueda { get; } = new();
@@ -200,6 +231,7 @@ namespace AppPrediosDemo.ViewModels
             get => _debugInfo;
             private set => Set(ref _debugInfo, value);
         }
+        
         private void UpdateDebug()
         {
             DebugInfo =
@@ -208,23 +240,9 @@ namespace AppPrediosDemo.ViewModels
                 $"Tipo= {PredioActual.IdTipoProceso?.ToString() ?? "-"}  |  " +
                 $"Etapa= {PredioActual.IdEtapaProcesal?.ToString() ?? "-"}";
         }
-
         // ===== ctor =====
         public PredioFormViewModel()
         {
-            CirculosRegistrales.Add("Círculo 01");
-            CirculosRegistrales.Add("Círculo 02");
-            AbogadosSustanciadores.Add("Abogada 1");
-            AbogadosSustanciadores.Add("Abogado 2");
-            AbogadosRevisores.Add("Revisor 1");
-            AbogadosRevisores.Add("Revisor 2");
-            EstadosRevision.Add("Aprobado");
-            EstadosRevision.Add("Devuelto");
-            EstadosRevision.Add("En revisión");
-            EstadosAprobacion.Add("Aprobado");
-            EstadosAprobacion.Add("Observado");
-            EstadosAprobacion.Add("Rechazado");
-
             NuevoCommand = new RelayCommand(Nuevo, () => true);
             GuardarCommand = new AsyncRelayCommand(GuardarAsync, PuedeGuardar);
             CancelarCommand = new RelayCommand(Cancelar, () => true);
@@ -232,10 +250,13 @@ namespace AppPrediosDemo.ViewModels
             LimpiarFiltrosCommand = new RelayCommand(LimpiarFiltros, () => true);
             PredioActual = new Predio();
 
+            Modo = ModoFormulario.Ninguno;
+
             ErrorsChanged += (_, __) => { GuardarCommand.RaiseCanExecuteChanged(); UpdateDebug(); };
             UpdateDebug();
-        }
 
+        }
+        
         // Llamar desde MainWindow.Loaded
         public async Task InitializeAsync()
         {
@@ -243,24 +264,40 @@ namespace AppPrediosDemo.ViewModels
             ValidateAll();
             GuardarCommand.RaiseCanExecuteChanged();
             UpdateDebug();
+
         }
 
         // ===== Guardar: requisitos mínimos =====
         private bool PuedeGuardar()
         {
-            // No dependas de HasErrors para habilitar botón. Solo los mínimos.
-            bool ok =
+            // Si no estamos en Nuevo o Edición, no se puede guardar
+            if (Modo == ModoFormulario.Ninguno)
+                return false;
+
+            // CLAVE: si hay cualquier error de validación (borde rojo), NO guardar
+            if (HasErrors)
+                return false;
+
+            // Requisitos mínimos de negocio
+            return
+                // Identificación
                 !string.IsNullOrWhiteSpace(PredioActual.ID) &&
                 !string.IsNullOrWhiteSpace(PredioActual.FMI) &&
-                PredioActual.IdFuenteProceso.GetValueOrDefault() > 0 &&
-                PredioActual.IdTipoProceso.GetValueOrDefault() > 0 &&
-                PredioActual.IdEtapaProcesal.GetValueOrDefault() > 0 &&
-                IdLocalizacionSeleccionada.HasValue &&
-                PredioActual.AreaRegistral.HasValue &&
-                PredioActual.AreaCalculada.HasValue;
 
-            return ok;
+                // Localización
+                IdLocalizacionSeleccionada.HasValue &&
+
+                // Área calculada obligatoria
+                PredioActual.AreaCalculada.HasValue &&
+
+                // Asignación y revisión obligatorios
+                !string.IsNullOrWhiteSpace(PredioActual.AbogadoSustanciadorAsignado) &&
+                !string.IsNullOrWhiteSpace(PredioActual.AbogadoRevisorAsignado) &&
+                PredioActual.FechaEntregaARevisor.HasValue &&
+                PredioActual.FechaAsignacionReparto.HasValue;
         }
+
+
 
         private async Task LoadAsync()
         {
@@ -281,6 +318,9 @@ namespace AppPrediosDemo.ViewModels
             await CargarTipoProcesosAsync();
             await CargarFuentesProcesoAsync();
             await CargarEtapasProcesalesAsync();
+
+            await CargarTiposInformeAsync();
+            await CargarTiposEstadoRevisionAsync();
         }
 
         private static void Rellenar<T>(ObservableCollection<T> target, IEnumerable<T> data)
@@ -417,6 +457,32 @@ namespace AppPrediosDemo.ViewModels
             }
         }
 
+        private async Task CargarTiposInformeAsync()
+        {
+            using var ctx = new ViabilidadContext();
+            var data = await ctx.TipoInformes
+                .AsNoTracking()
+                .OrderBy(x => x.NombreTipoInforme)
+                .Select(x => new CatalogOption { Id = x.IdTipoInforme, Nombre = x.NombreTipoInforme })
+                .ToListAsync();
+
+            TiposInforme.Clear();
+            foreach (var item in data) TiposInforme.Add(item);
+        }
+
+        private async Task CargarTiposEstadoRevisionAsync()
+        {
+            using var ctx = new ViabilidadContext();
+            var data = await ctx.TipoEstadoRevisions
+                .AsNoTracking()
+                .OrderBy(x => x.NombreTipoEstadoRevision)
+                .Select(x => new CatalogOption { Id = x.IdTipoEstadoRevision, Nombre = x.NombreTipoEstadoRevision })
+                .ToListAsync();
+
+            TiposEstadoRevision.Clear();
+            foreach (var item in data) TiposEstadoRevision.Add(item);
+        }
+
         // ===== Validación =====
         private readonly Dictionary<string, List<string>> _errors = new();
         public bool HasErrors => _errors.Count > 0;
@@ -431,6 +497,7 @@ namespace AppPrediosDemo.ViewModels
             if (!list.Contains(message)) list.Add(message);
             ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(prop));
         }
+
         private void ClearErrors(string prop)
         {
             if (_errors.Remove(prop))
@@ -448,9 +515,11 @@ namespace AppPrediosDemo.ViewModels
 
         public void ValidateAll()
         {
+            // ID y FMI
             ValidateRequiredMaxLen(K(nameof(PredioActual.ID)), PredioActual.ID, 30);
             ValidateRequiredMaxLen(K(nameof(PredioActual.FMI)), PredioActual.FMI, 100);
 
+            // Identificación del titular (sigue igual, opcional)
             if (!string.IsNullOrWhiteSpace(PredioActual.NumeroIdentificacion))
             {
                 ValidateRegex(
@@ -460,16 +529,32 @@ namespace AppPrediosDemo.ViewModels
                     "Ingrese solo números (opcional . o -).");
             }
 
-            ValidateDecimalReq(K(nameof(PredioActual.AreaRegistral)), PredioActual.AreaRegistral);
+            // Áreas:
+            // - Registral: opcional, pero no negativa
+            // - Calculada: obligatoria
+            ValidateDecimalOptional(K(nameof(PredioActual.AreaRegistral)), PredioActual.AreaRegistral);
             ValidateDecimalReq(K(nameof(PredioActual.AreaCalculada)), PredioActual.AreaCalculada);
 
-            ValidateCatalogo(K(nameof(PredioActual.IdFuenteProceso)), PredioActual.IdFuenteProceso);
-            ValidateCatalogo(K(nameof(PredioActual.IdTipoProceso)), PredioActual.IdTipoProceso);
-            ValidateCatalogo(K(nameof(PredioActual.IdEtapaProcesal)), PredioActual.IdEtapaProcesal);
+            // Catálogos de proceso: ya no obligatorios por regla de negocio nueva
+            // (si quieres seguir exigiéndolos, vuelve a activar estas líneas)
+            //ValidateCatalogo(K(nameof(PredioActual.IdFuenteProceso)), PredioActual.IdFuenteProceso);
+            //ValidateCatalogo(K(nameof(PredioActual.IdTipoProceso)), PredioActual.IdTipoProceso);
+            //ValidateCatalogo(K(nameof(PredioActual.IdEtapaProcesal)), PredioActual.IdEtapaProcesal);
 
+            // Localización
             ValidateLocalizacion();
+
+            // Asignación y revisión: nuevos obligatorios
+            ValidateRequiredString(K(nameof(PredioActual.AbogadoSustanciadorAsignado)), PredioActual.AbogadoSustanciadorAsignado);
+            ValidateRequiredString(K(nameof(PredioActual.AbogadoRevisorAsignado)), PredioActual.AbogadoRevisorAsignado);
+            ValidateDateReq(K(nameof(PredioActual.FechaEntregaARevisor)), PredioActual.FechaEntregaARevisor);
+            ValidateDateReq(K(nameof(PredioActual.FechaAsignacionReparto)), PredioActual.FechaAsignacionReparto);
+
+            ValidateNumeroReparto();
+
             UpdateDebug();
         }
+
 
         private void ValidateRequiredMaxLen(string key, string? value, int maxLen)
         {
@@ -480,7 +565,11 @@ namespace AppPrediosDemo.ViewModels
 
         private void ValidateRegex(string key, string? value, string pattern, string msg)
         {
-            if (string.IsNullOrWhiteSpace(value)) return;
+            ClearErrors(key);
+
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+
             if (!System.Text.RegularExpressions.Regex.IsMatch(value, pattern))
                 AddError(key, msg);
         }
@@ -497,12 +586,73 @@ namespace AppPrediosDemo.ViewModels
             if (value is null) { AddError(key, "Campo obligatorio."); return; }
             if (value < 0) AddError(key, "El valor no puede ser negativo.");
         }
+        private void ValidateDecimalOptional(string key, decimal? value)
+        {
+            ClearErrors(key);
+            if (value < 0)
+                AddError(key, "El valor no puede ser negativo.");
+        }
+
+        private void ValidateRequiredString(string key, string? value)
+        {
+            ClearErrors(key);
+            if (string.IsNullOrWhiteSpace(value))
+                AddError(key, "Campo obligatorio.");
+        }
+
+        private void ValidateDateReq(string key, DateTime? value)
+        {
+            ClearErrors(key);
+            if (!value.HasValue)
+                AddError(key, "Campo obligatorio.");
+        }
+        private void ValidateNumeroReparto()
+        {
+            string key = K(nameof(PredioActual.NumeroReparto)); // "NumeroReparto"
+            ClearErrors(key);
+
+            var v = PredioActual.NumeroReparto;
+
+            // Vacío es válido (campo opcional)
+            if (string.IsNullOrWhiteSpace(v))
+                return;
+
+            if (!int.TryParse(v, out _))
+                AddError(key, "# Reparto debe ser un número entero.");
+        }
+        private bool ValidarCamposCriticosAntesDeGuardar()
+        {
+            // 1) Número de identificación (CC/NIT):
+            if (!string.IsNullOrWhiteSpace(PredioActual.NumeroIdentificacion))
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(
+                        PredioActual.NumeroIdentificacion,
+                        @"^\d{1,19}([.-]?\d{1,19})*$"))
+                {
+                    MessageBox.Show(
+                        "Número de identificación inválido. Use solo números (opcionalmente . o -).",
+                        "Validación");
+                    return false;
+                }
+            }
+
+            // 2) # Reparto: solo enteros
+            if (!string.IsNullOrWhiteSpace(PredioActual.NumeroReparto) &&
+                !int.TryParse(PredioActual.NumeroReparto, out _))
+            {
+                MessageBox.Show("# Reparto debe ser un número entero.", "Validación");
+                return false;
+            }
+
+            return true;
+        }
+
 
         // ===== Comandos =====
         private Predio _backup = new();
         private void Nuevo()
         {
-            _backup = PredioActual;
+
             PredioActual = new Predio();
             SelectedDepartamento = null;
             SelectedMunicipio = null;
@@ -512,6 +662,69 @@ namespace AppPrediosDemo.ViewModels
             IdLocalizacionSeleccionada = null;
             ResultadosBusqueda.Clear();
             ResultadoSeleccionado = null;
+            LimpiarDatosFormulario();    // deja todo en blanco
+            Modo = ModoFormulario.Nuevo; // habilita campos
+
+            ValidateAll();
+            GuardarCommand.RaiseCanExecuteChanged();
+            UpdateDebug();
+
+        }
+        private void LimpiarDatosFormulario()
+        {
+            // 1) Modelo principal: limpia Identificación, Ubicación, Concepto, Asignación, etc.
+            PredioActual = new Predio();
+
+            // 2) Cascada de localización (combo de depto/muni/centro)
+            SelectedDepartamento = null;
+            SelectedMunicipio = null;
+            SelectedCentro = null;
+            Municipios.Clear();
+            CentrosPoblados.Clear();
+            IdLocalizacionSeleccionada = null;
+
+            // 3) Medidas procesales (Gravámenes y afectaciones)
+            //    Esto deja todos los combos/caixas de esa pestaña en blanco.
+            Medidas.LoadFrom(Enumerable.Empty<MedidaProcesal>());
+
+            // 4) Búsqueda / registro actual
+            _idRegistroActual = null;
+            ResultadoSeleccionado = null;
+
+            // 5) Validación y debug
+            _errors.Clear();
+            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(string.Empty));
+
+            ValidateAll();
+            GuardarCommand.RaiseCanExecuteChanged();
+            UpdateDebug();
+        }
+        // Limpia TODOS los datos de la pantalla y deja el formulario en solo lectura
+        private void ResetDespuesDeGuardar()
+        {
+            // Modelo principal
+            PredioActual = new Predio();
+
+            // Id del registro en edición
+            _idRegistroActual = null;
+
+            // Localización y combos en cascada
+            SelectedDepartamento = null;
+            SelectedMunicipio = null;
+            SelectedCentro = null;
+            Municipios.Clear();
+            CentrosPoblados.Clear();
+            IdLocalizacionSeleccionada = null;
+
+            // Medidas procesales (pestaña Gravámenes y afectaciones)
+            Medidas.Limpiar();   // método nuevo que vas a crear en el VM de medidas
+
+            // Conceptos / fechas / etc. también quedan en blanco porque PredioActual es nuevo
+
+            // Estado del formulario
+            Modo = ModoFormulario.Ninguno;
+
+            // Recalcular validaciones y estado del botón Guardar
             ValidateAll();
             GuardarCommand.RaiseCanExecuteChanged();
             UpdateDebug();
@@ -519,98 +732,40 @@ namespace AppPrediosDemo.ViewModels
 
         private async Task GuardarAsync()
         {
-            MessageBox.Show("Entró a GuardarAsync"); // probe 1
             ValidateAll();
-            var diag = $"HasErrors={HasErrors}  IdLoc={IdLocalizacionSeleccionada}  " +
-                       $"Fuente={PredioActual.IdFuenteProceso}  Tipo={PredioActual.IdTipoProceso}  Etapa={PredioActual.IdEtapaProcesal}  " +
-                       $"AreaReg={PredioActual.AreaRegistral}  AreaCalc={PredioActual.AreaCalculada}";
-            MessageBox.Show(diag); // probe 2
+
+            // Bloqueo duro para identificación y # Reparto
+            if (!ValidarCamposCriticosAntesDeGuardar())
+                return;
 
             if (HasErrors || IdLocalizacionSeleccionada is null)
             {
-                MessageBox.Show("No guarda: validación.");
+                MessageBox.Show("Revise los datos obligatorios antes de guardar.");
                 return;
             }
 
-            IsBusy = true;
+            if (Modo == ModoFormulario.Ninguno)
+            {
+                MessageBox.Show("El formulario no está en modo de Edición o Creación.");
+                return;
+            }
+
             try
             {
-                // BYPASS del servicio para aislar problemas.
-                var medidas = Medidas.ToEntities(0);
+                IsBusy = true;
 
-                await using var ctx = new ViabilidadContext();
-                await using var tx = await ctx.Database.BeginTransactionAsync();
-
-                // RegistroProceso
-                var rp = new RegistroProceso
+                if (Modo == ModoFormulario.Nuevo)
                 {
-                    IdPostulacion = PredioActual.ID!,
-                    FMI = PredioActual.FMI!,
-                    NumeroExpediente = PredioActual.NoExpediente,
-                    IdFuenteProceso = PredioActual.IdFuenteProceso!.Value,
-                    IdTipoProceso = PredioActual.IdTipoProceso!.Value,
-                    IdEtapaProcesal = PredioActual.IdEtapaProcesal!.Value,
-                    RadicadoOrfeo = PredioActual.RadicadoOrfeo,
-                    Dependencia = PredioActual.Dependencia
-                };
-                ctx.RegistroProcesos.Add(rp);
-                var n1 = await ctx.SaveChangesAsync(); // probe 3
-                MessageBox.Show($"Save1 cambios={n1}  IdRegistro={rp.IdRegistroProceso}");
-
-                // EstudioTerreno
-                var et = new EstudioTerreno
-                {
-                    IdRegistroProceso = rp.IdRegistroProceso,
-                    IdLocalizacion = IdLocalizacionSeleccionada.Value,
-                    AreaRegistral = PredioActual.AreaRegistral!.Value,
-                    AreaCalculada = PredioActual.AreaCalculada!.Value,
-                    CirculoRegistral = PredioActual.CirculoRegistral,
-
-                    TipoPersonaTitular = PredioActual.PersonaTitular,
-                    NombrePropietario = PredioActual.NombrePropietarios,
-                    ApellidoPropietario = PredioActual.ApellidoPropietario,
-                    Identificacion = string.IsNullOrWhiteSpace(PredioActual.NumeroIdentificacion)
-                                          ? null
-                                          : long.Parse(new string(PredioActual
-                                                                    .NumeroIdentificacion
-                                                                    .Where(char.IsDigit)
-                                                                    .ToArray())),
-
-                    // NUEVO: mapeo a columnas de BD
-                    NaturalezaJuridica = PredioActual.AnalisisNaturalezaUltimaTradicion,
-                    AcreditacionPropiedad = PredioActual.TituloOriginario
-                };
-                ctx.EstudioTerrenos.Add(et);
-                var n2 = await ctx.SaveChangesAsync(); // probe 4
-                MessageBox.Show($"Save2 cambios={n2}  IdEstudio={et.IdEstudioTerreno}");
-
-                // Medidas
-                foreach (var m in medidas)
-                {
-                    m.IdEstudioTerreno = et.IdEstudioTerreno;
-                    ctx.MedidaProcesals.Add(m);
+                    await GuardarNuevoAsync();   // INSERT
+                    MessageBox.Show("Registro creado correctamente.");
                 }
-                var n3 = await ctx.SaveChangesAsync(); // probe 5
-
-                // Concepto previo si aplica
-                if (PredioActual.CuentaConInformeJuridicoPrevio)
+                else if (Modo == ModoFormulario.Edicion)
                 {
-                    var cp = new ConceptosPrevio
-                    {
-                        IdRegistroProceso = rp.IdRegistroProceso,
-                        FechaInforme = PredioActual.FechaInformePrevioReportada,
-                        Concepto = PredioActual.ConceptoAntiguo
-                    };
-                    ctx.ConceptosPrevios.Add(cp);
-                    var n4 = await ctx.SaveChangesAsync(); // probe 6
-                    MessageBox.Show($"Save3 medidas={n3}  concepto={n4}");
+                    await ActualizarAsync();     // UPDATE
+                    MessageBox.Show("Registro actualizado correctamente.");
                 }
 
-                await tx.CommitAsync();
-
-                MessageBox.Show($"OK. IdRegistroProceso={rp.IdRegistroProceso}");
-                Nuevo();
-                ValidateAll();
+                ResetDespuesDeGuardar();
             }
             catch (DbUpdateException dbEx)
             {
@@ -625,9 +780,355 @@ namespace AppPrediosDemo.ViewModels
                 IsBusy = false;
             }
         }
-        
 
-        private void Cancelar() => PredioActual = _backup;
+
+        private async Task GuardarNuevoAsync()
+        {
+            IsBusy = true;
+            try
+            {
+                var medidas = Medidas.ToEntities(0);
+
+                await using var ctx = new ViabilidadContext();
+                await using var tx = await ctx.Database.BeginTransactionAsync();
+
+                // ===== RegistroProceso =====
+                var rp = new RegistroProceso
+                {
+                    IdPostulacion = PredioActual.ID!,
+                    FMI = PredioActual.FMI!,
+                    NumeroExpediente = PredioActual.NoExpediente,
+
+                    // OPCIONALES: sin .Value
+                    IdFuenteProceso = PredioActual.IdFuenteProceso,
+                    IdTipoProceso = PredioActual.IdTipoProceso,
+                    IdEtapaProcesal = PredioActual.IdEtapaProcesal,
+
+                    RadicadoOrfeo = PredioActual.RadicadoOrfeo,
+                    Dependencia = PredioActual.Dependencia
+                };
+                ctx.RegistroProcesos.Add(rp);
+                await ctx.SaveChangesAsync();
+
+                // ===== EstudioTerreno =====
+                var et = new EstudioTerreno
+                {
+                    IdRegistroProceso = rp.IdRegistroProceso,
+                    IdLocalizacion = IdLocalizacionSeleccionada!.Value,
+                    AreaRegistral = PredioActual.AreaRegistral,        // opcional
+                    AreaCalculada = PredioActual.AreaCalculada!.Value, // obligatoria
+
+                    CirculoRegistral = PredioActual.CirculoRegistral,
+                    TipoPersonaTitular = PredioActual.PersonaTitular,
+                    NombrePropietario = PredioActual.NombrePropietarios,
+                    ApellidoPropietario = PredioActual.ApellidoPropietario,
+                    Identificacion = string.IsNullOrWhiteSpace(PredioActual.NumeroIdentificacion)
+                        ? (long?)null
+                        : long.Parse(new string(PredioActual.NumeroIdentificacion.Where(char.IsDigit).ToArray())),
+                    NaturalezaJuridica = PredioActual.AnalisisNaturalezaUltimaTradicion,
+                    AcreditacionPropiedad = PredioActual.TituloOriginario
+                };
+
+                ctx.EstudioTerrenos.Add(et);
+                await ctx.SaveChangesAsync();
+
+                // ===== Medidas =====
+                foreach (var m in medidas)
+                {
+                    m.IdEstudioTerreno = et.IdEstudioTerreno;
+                    ctx.MedidaProcesals.Add(m);
+                }
+                await ctx.SaveChangesAsync();
+
+                // ===== Concepto previo (si aplica) =====
+                if (PredioActual.CuentaConInformeJuridicoPrevio)
+                {
+                    var cp = new ConceptosPrevio
+                    {
+                        IdRegistroProceso = rp.IdRegistroProceso,
+                        FechaInforme = PredioActual.FechaInformePrevioReportada,
+                        Concepto = PredioActual.ConceptoAntiguo
+                    };
+                    ctx.ConceptosPrevios.Add(cp);
+                    await ctx.SaveChangesAsync();
+                }
+
+                int? nroReparto = null;
+                if (!string.IsNullOrWhiteSpace(PredioActual.NumeroReparto))
+                {
+                    if (!int.TryParse(PredioActual.NumeroReparto, out var tmp))
+                    {
+                        MessageBox.Show("El # Reparto debe ser un número entero.", "Validación");
+                        await tx.RollbackAsync();
+                        return;
+                    }
+                    nroReparto = tmp;
+                }
+
+                // Buscar ConceptoFinal (siempre será null al guardar nuevo, pero usamos la lógica de upsert)
+                var cf = await ctx.ConceptoFinals
+                    .FirstOrDefaultAsync(c => c.IdRegistroProceso == rp.IdRegistroProceso);
+
+                if (cf is null)
+                {
+                    cf = new ConceptoFinal { IdRegistroProceso = rp.IdRegistroProceso };
+                    ctx.ConceptoFinals.Add(cf);
+                }
+
+                // Asignar todos los campos del Concepto Final
+                cf.ConceptoActualDeViabilidadJuridica = PredioActual.AnalisisJuridicoFinal;
+                cf.FechaInforme = PredioActual.FechaInforme;
+                cf.Viabilidad = string.IsNullOrWhiteSpace(PredioActual.Viabilidad)
+                    ? "Sin definir"
+                    : PredioActual.Viabilidad;
+                cf.IdTipoInforme = PredioActual.IdTipoInforme.HasValue
+                    ? (byte?)PredioActual.IdTipoInforme.Value
+                    : null;
+                cf.CausalNoViabilidad = PredioActual.CausalNoViabilidad;
+                cf.InsumosPendientes = PredioActual.InsumosPendientes;
+
+                // Reparto/Revisión
+                cf.FechaEntregaARevisor = PredioActual.FechaEntregaARevisor;
+                cf.AbogadoSustanciadorAsignado = PredioActual.AbogadoSustanciadorAsignado;
+                cf.AbogadoRevisorAsignado = PredioActual.AbogadoRevisorAsignado;
+                cf.NroReparto = nroReparto;
+                cf.FechaAsignacionReparto = PredioActual.FechaAsignacionReparto;
+                cf.FechaPlazoEntregaARevisor = PredioActual.FechaPlazoEntregaARevisor;
+
+                // Cierre/Coordinación
+                cf.IdTipoEstadoRevision = PredioActual.IdTipoEstadoRevision.HasValue
+                    ? (byte?)PredioActual.IdTipoEstadoRevision.Value
+                    : null;
+                cf.ObservacionesRevisor = PredioActual.ObservacionesRevisor;
+                cf.EntregoCarpetaSoportes = string.IsNullOrWhiteSpace(PredioActual.EntregoCarpetaSoportes)
+                    ? null
+                    : PredioActual.EntregoCarpetaSoportes;
+                cf.FechaEnvioACoordinacion = PredioActual.FechaEnvioACoordinacion;
+                cf.EstadoAprobacionCoordinadora = PredioActual.EstadoAprobacionCoordinadora;
+                cf.FechaRemisionSoportesAGestoraDocumental = PredioActual.FechaRemisionSoportesGestoraDocumental;
+                cf.FechaRemisionInformeAGestoraDocumental = PredioActual.FechaRemisionInformeGestoraDocumental;
+                cf.FechaCargueInformeJuridicoExpOrfeo = PredioActual.FechaCargueInformeJuridicoEnExpteOrfeo;
+                cf.FechaDeCargueDocsYSoportesExpOrfeo = PredioActual.FechaCargueDocumentosYSoportesEnExpdteOrfeo;
+                cf.FechaGestionEtapaSit = PredioActual.FechaGestionEtapaSIT;
+
+                await ctx.SaveChangesAsync(); // Guardar el ConceptoFinal
+            
+                await tx.CommitAsync();
+
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+
+        private async Task ActualizarAsync()
+        {
+            if (!_idRegistroActual.HasValue)
+            {
+                MessageBox.Show("No hay un registro cargado para actualizar.");
+                return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var id = _idRegistroActual.Value;
+                var medidas = Medidas.ToEntities(0);
+
+                await using var ctx = new ViabilidadContext();
+                await using var tx = await ctx.Database.BeginTransactionAsync();
+
+                // ===== RegistroProceso =====
+                var rp = await ctx.RegistroProcesos
+                    .FirstOrDefaultAsync(x => x.IdRegistroProceso == id);
+
+                if (rp is null)
+                {
+                    MessageBox.Show("No se encontró el registro a actualizar.");
+                    await tx.RollbackAsync();
+                    return;
+                }
+
+                rp.IdPostulacion = PredioActual.ID!;
+                rp.FMI = PredioActual.FMI!;
+                rp.NumeroExpediente = PredioActual.NoExpediente;
+
+                // OPCIONALES: sin .Value
+                rp.IdFuenteProceso = PredioActual.IdFuenteProceso;
+                rp.IdTipoProceso = PredioActual.IdTipoProceso;
+                rp.IdEtapaProcesal = PredioActual.IdEtapaProcesal;
+
+                rp.RadicadoOrfeo = PredioActual.RadicadoOrfeo;
+                rp.Dependencia = PredioActual.Dependencia;
+
+
+                await ctx.SaveChangesAsync();
+
+                // ===== EstudioTerreno =====
+                var et = await ctx.EstudioTerrenos
+                    .Where(x => x.IdRegistroProceso == id)
+                    .OrderByDescending(x => x.IdEstudioTerreno)
+                    .FirstOrDefaultAsync();
+
+                if (et is null)
+                {
+                    et = new EstudioTerreno { IdRegistroProceso = id };
+                    ctx.EstudioTerrenos.Add(et);
+                    await ctx.SaveChangesAsync();
+                }
+
+                et.IdLocalizacion = IdLocalizacionSeleccionada!.Value;
+                et.AreaRegistral = PredioActual.AreaRegistral;        // opcional, sin .Value
+                et.AreaCalculada = PredioActual.AreaCalculada!.Value; // obligatoria
+
+                et.CirculoRegistral = PredioActual.CirculoRegistral;
+                et.TipoPersonaTitular = PredioActual.PersonaTitular;
+                et.NombrePropietario = PredioActual.NombrePropietarios;
+                et.ApellidoPropietario = PredioActual.ApellidoPropietario;
+                et.Identificacion = string.IsNullOrWhiteSpace(PredioActual.NumeroIdentificacion)
+                    ? (long?)null
+                    : long.Parse(new string(PredioActual.NumeroIdentificacion.Where(char.IsDigit).ToArray()));
+                et.NaturalezaJuridica = PredioActual.AnalisisNaturalezaUltimaTradicion;
+                et.AcreditacionPropiedad = PredioActual.TituloOriginario;
+
+
+                await ctx.SaveChangesAsync();
+
+                // ===== Medidas (reemplazar todas) =====
+                var existentes = ctx.MedidaProcesals
+                    .Where(m => m.IdEstudioTerreno == et.IdEstudioTerreno);
+                ctx.MedidaProcesals.RemoveRange(existentes);
+                await ctx.SaveChangesAsync();
+
+                foreach (var m in medidas)
+                {
+                    m.IdEstudioTerreno = et.IdEstudioTerreno;
+                    ctx.MedidaProcesals.Add(m);
+                }
+                await ctx.SaveChangesAsync();
+
+                // ===== Concepto PREVIO =====
+                var cp = await ctx.ConceptosPrevios
+                    .FirstOrDefaultAsync(x => x.IdRegistroProceso == id);
+
+                if (PredioActual.CuentaConInformeJuridicoPrevio)
+                {
+                    if (cp is null)
+                    {
+                        cp = new ConceptosPrevio { IdRegistroProceso = id };
+                        ctx.ConceptosPrevios.Add(cp);
+                    }
+
+                    cp.FechaInforme = PredioActual.FechaInformePrevioReportada;
+                    cp.Concepto = PredioActual.ConceptoAntiguo;
+                }
+                else if (cp is not null)
+                {
+                    ctx.ConceptosPrevios.Remove(cp);
+                }
+
+                await ctx.SaveChangesAsync();
+
+                // ===== Concepto FINAL =====
+                bool tieneConceptoFinal =
+                    !string.IsNullOrWhiteSpace(PredioActual.AnalisisJuridicoFinal) ||
+                    PredioActual.FechaInforme.HasValue ||
+                    PredioActual.Viabilidad != null ||
+                    PredioActual.IdTipoInforme.HasValue ||
+                    !string.IsNullOrWhiteSpace(PredioActual.CausalNoViabilidad) ||
+                    !string.IsNullOrWhiteSpace(PredioActual.InsumosPendientes) ||
+                    PredioActual.FechaEntregaARevisor.HasValue ||
+                    PredioActual.IdTipoEstadoRevision.HasValue ||
+                    !string.IsNullOrWhiteSpace(PredioActual.ObservacionesRevisor) ||
+                    !string.IsNullOrWhiteSpace(PredioActual.EntregoCarpetaSoportes) ||
+                    PredioActual.FechaEnvioACoordinacion.HasValue ||
+                    !string.IsNullOrWhiteSpace(PredioActual.EstadoAprobacionCoordinadora) ||
+                    PredioActual.FechaRemisionSoportesGestoraDocumental.HasValue ||
+                    PredioActual.FechaRemisionInformeGestoraDocumental.HasValue ||
+                    PredioActual.FechaCargueInformeJuridicoEnExpteOrfeo.HasValue ||
+                    PredioActual.FechaCargueDocumentosYSoportesEnExpdteOrfeo.HasValue ||
+                    PredioActual.FechaGestionEtapaSIT.HasValue;
+
+                var cf = await ctx.ConceptoFinals
+                    .FirstOrDefaultAsync(c => c.IdRegistroProceso == id);
+
+                if (tieneConceptoFinal)
+                {
+                    int? nroReparto = null;
+                    if (!string.IsNullOrWhiteSpace(PredioActual.NumeroReparto))
+                    {
+                        if (!int.TryParse(PredioActual.NumeroReparto, out var tmp))
+                        {
+                            MessageBox.Show("El # Reparto debe ser un número entero.", "Validación");
+                            await tx.RollbackAsync();
+                            return;
+                        }
+                        nroReparto = tmp;
+                    }
+
+                    if (cf is null)
+                    {
+                        cf = new ConceptoFinal { IdRegistroProceso = id };
+                        ctx.ConceptoFinals.Add(cf);
+                    }
+
+                    cf.ConceptoActualDeViabilidadJuridica = PredioActual.AnalisisJuridicoFinal;
+                    cf.FechaInforme = PredioActual.FechaInforme;
+                    cf.Viabilidad = string.IsNullOrWhiteSpace(PredioActual.Viabilidad)
+                        ? "Sin definir"
+                        : PredioActual.Viabilidad;
+
+                    cf.IdTipoInforme = PredioActual.IdTipoInforme.HasValue
+                        ? (byte?)PredioActual.IdTipoInforme.Value
+                        : null;
+                    cf.CausalNoViabilidad = PredioActual.CausalNoViabilidad;
+                    cf.InsumosPendientes = PredioActual.InsumosPendientes;
+
+                    cf.FechaEntregaARevisor = PredioActual.FechaEntregaARevisor;
+                    cf.AbogadoSustanciadorAsignado = PredioActual.AbogadoSustanciadorAsignado;
+                    cf.AbogadoRevisorAsignado = PredioActual.AbogadoRevisorAsignado;
+                    cf.NroReparto = nroReparto;
+                    cf.FechaAsignacionReparto = PredioActual.FechaAsignacionReparto;
+                    cf.FechaPlazoEntregaARevisor = PredioActual.FechaPlazoEntregaARevisor;
+
+                    cf.IdTipoEstadoRevision = PredioActual.IdTipoEstadoRevision.HasValue
+                        ? (byte?)PredioActual.IdTipoEstadoRevision.Value
+                        : null;
+                    cf.ObservacionesRevisor = PredioActual.ObservacionesRevisor;
+
+                    cf.EntregoCarpetaSoportes = string.IsNullOrWhiteSpace(PredioActual.EntregoCarpetaSoportes)
+                        ? null
+                        : PredioActual.EntregoCarpetaSoportes;
+
+                    cf.FechaEnvioACoordinacion = PredioActual.FechaEnvioACoordinacion;
+                    cf.EstadoAprobacionCoordinadora = PredioActual.EstadoAprobacionCoordinadora;
+                    cf.FechaRemisionSoportesAGestoraDocumental = PredioActual.FechaRemisionSoportesGestoraDocumental;
+                    cf.FechaRemisionInformeAGestoraDocumental = PredioActual.FechaRemisionInformeGestoraDocumental;
+                    cf.FechaCargueInformeJuridicoExpOrfeo = PredioActual.FechaCargueInformeJuridicoEnExpteOrfeo;
+                    cf.FechaDeCargueDocsYSoportesExpOrfeo = PredioActual.FechaCargueDocumentosYSoportesEnExpdteOrfeo;
+                    cf.FechaGestionEtapaSit = PredioActual.FechaGestionEtapaSIT;
+                }
+                else if (cf is not null)
+                {
+                    ctx.ConceptoFinals.Remove(cf);
+                }
+
+                await ctx.SaveChangesAsync();
+                await tx.CommitAsync();
+
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+        
+        private void Cancelar()
+        {
+            PredioActual = _backup;
+            Modo = ModoFormulario.Ninguno;
+        }
 
         // ===== Buscar y cargar =====
         private async Task BuscarAsync()
@@ -653,20 +1154,30 @@ namespace AppPrediosDemo.ViewModels
                     q = q.Where(x => x.NumeroExpediente != null && x.NumeroExpediente.StartsWith(FiltroExpediente));
 
                 var data = await q
-                    .Include(x => x.IdFuenteProcesoNavigation)
-                    .Include(x => x.IdTipoProcesoNavigation)
-                    .Include(x => x.IdEtapaProcesalNavigation)
-                    .OrderByDescending(x => x.IdRegistroProceso)
-                    .Take(5)
-                    .Select(x => new PredioListado(
-                        x.IdRegistroProceso,
-                        x.FMI,
-                        x.NumeroExpediente,
-                        x.IdFuenteProcesoNavigation.NombreFuenteProceso,
-                        x.IdTipoProcesoNavigation.NombreTipoProceso,
-                        x.IdEtapaProcesalNavigation.NombreEtapaProcesal
-                    ))
-                    .ToListAsync();
+                .OrderByDescending(x => x.IdRegistroProceso)
+                .Take(5)
+                .Select(x => new PredioListado(
+                    x.IdRegistroProceso,
+                    x.IdPostulacion,  // ID que se mostrará
+
+                    x.FMI,
+                    x.NumeroExpediente,
+
+                    // desde ConceptoFinal (si existe)
+                    x.ConceptoFinals
+                        .Select(cf => cf.AbogadoSustanciadorAsignado)
+                        .FirstOrDefault(),
+                    x.ConceptoFinals
+                        .Select(cf => cf.AbogadoRevisorAsignado)
+                        .FirstOrDefault(),
+                    x.ConceptoFinals
+                        .Select(cf => cf.FechaAsignacionReparto)
+                        .FirstOrDefault(),
+                    x.ConceptoFinals
+                        .Select(cf => cf.FechaEntregaARevisor)
+                        .FirstOrDefault()
+                ))
+                .ToListAsync();
 
                 ResultadosBusqueda.Clear();
                 foreach (var r in data) ResultadosBusqueda.Add(r);
@@ -727,18 +1238,20 @@ namespace AppPrediosDemo.ViewModels
                     PredioActual.AreaCalculada = et.AreaCalculada;
                     PredioActual.CirculoRegistral = et.CirculoRegistral;
 
-                    // 🔹 Nuevos mapeos:
+                    PredioActual.PersonaTitular = et.TipoPersonaTitular;
+                    PredioActual.NombrePropietarios = et.NombrePropietario;
+                    PredioActual.ApellidoPropietario = et.ApellidoPropietario;
+                    PredioActual.NumeroIdentificacion = et.Identificacion?.ToString();
+
                     PredioActual.TituloOriginario = et.AcreditacionPropiedad;
                     PredioActual.AnalisisNaturalezaUltimaTradicion = et.NaturalezaJuridica;
 
-                    // Medidas asociadas
                     var medidas = await ctx.MedidaProcesals
                         .AsNoTracking()
                         .Where(m => m.IdEstudioTerreno == et.IdEstudioTerreno)
                         .ToListAsync();
 
-                    if (medidas.Count > 0)
-                        Medidas.LoadFrom(medidas);
+                    Medidas.LoadFrom(medidas);
                 }
 
                 // === Localización en cascada ===
@@ -762,6 +1275,65 @@ namespace AppPrediosDemo.ViewModels
                     }
                 }
 
+                // === Concepto PREVIO ===
+                var cp = await ctx.ConceptosPrevios
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.IdRegistroProceso == idRegistroProceso);
+
+                if (cp is not null)
+                {
+                    PredioActual.CuentaConInformeJuridicoPrevio = true;
+                    PredioActual.FechaInformePrevioReportada = cp.FechaInforme;
+                    PredioActual.ConceptoAntiguo = cp.Concepto;
+                }
+                else
+                {
+                    PredioActual.CuentaConInformeJuridicoPrevio = false;
+                    PredioActual.FechaInformePrevioReportada = null;
+                    PredioActual.ConceptoAntiguo = null;
+                }
+
+                // === Concepto FINAL ===
+                var cf = await ctx.ConceptoFinals
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.IdRegistroProceso == idRegistroProceso);
+
+                if (cf is not null)
+                {
+                    PredioActual.AnalisisJuridicoFinal = cf.ConceptoActualDeViabilidadJuridica;
+                    PredioActual.FechaInforme = cf.FechaInforme;
+                    PredioActual.Viabilidad = cf.Viabilidad;
+
+                    PredioActual.IdTipoInforme = cf.IdTipoInforme;
+                    PredioActual.CausalNoViabilidad = cf.CausalNoViabilidad;
+                    PredioActual.InsumosPendientes = cf.InsumosPendientes;
+
+                    PredioActual.FechaEntregaARevisor = cf.FechaEntregaARevisor;
+                    PredioActual.AbogadoSustanciadorAsignado = cf.AbogadoSustanciadorAsignado;
+                    PredioActual.AbogadoRevisorAsignado = cf.AbogadoRevisorAsignado;
+
+                    PredioActual.NumeroReparto = cf.NroReparto?.ToString();
+
+                    PredioActual.FechaAsignacionReparto = cf.FechaAsignacionReparto;
+                    PredioActual.FechaPlazoEntregaARevisor = cf.FechaPlazoEntregaARevisor;
+
+                    PredioActual.IdTipoEstadoRevision = cf.IdTipoEstadoRevision;
+                    PredioActual.ObservacionesRevisor = cf.ObservacionesRevisor;
+
+                    PredioActual.EntregoCarpetaSoportes = cf.EntregoCarpetaSoportes;
+
+                    PredioActual.FechaEnvioACoordinacion = cf.FechaEnvioACoordinacion;
+                    PredioActual.EstadoAprobacionCoordinadora = cf.EstadoAprobacionCoordinadora;
+                    PredioActual.FechaRemisionSoportesGestoraDocumental = cf.FechaRemisionSoportesAGestoraDocumental;
+                    PredioActual.FechaRemisionInformeGestoraDocumental = cf.FechaRemisionInformeAGestoraDocumental;
+                    PredioActual.FechaCargueInformeJuridicoEnExpteOrfeo = cf.FechaCargueInformeJuridicoExpOrfeo;
+                    PredioActual.FechaCargueDocumentosYSoportesEnExpdteOrfeo = cf.FechaDeCargueDocsYSoportesExpOrfeo;
+                    PredioActual.FechaGestionEtapaSIT = cf.FechaGestionEtapaSit;
+                }
+
+                _idRegistroActual = idRegistroProceso;
+                Modo = ModoFormulario.Edicion;
+
                 ValidateAll();
                 GuardarCommand.RaiseCanExecuteChanged();
                 UpdateDebug();
@@ -771,7 +1343,6 @@ namespace AppPrediosDemo.ViewModels
                 MessageBox.Show("CargarPredioDesdeRegistroAsync:\n" + ex.Message);
             }
         }
-
 
         private void LimpiarFiltros()
         {
@@ -796,7 +1367,7 @@ namespace AppPrediosDemo.ViewModels
                     break;
 
                 case nameof(Predio.AreaRegistral):
-                    ValidateDecimalReq(K(nameof(PredioActual.AreaRegistral)), PredioActual.AreaRegistral);
+                    ValidateDecimalOptional(K(nameof(PredioActual.AreaRegistral)), PredioActual.AreaRegistral);
                     break;
 
                 case nameof(Predio.AreaCalculada):
@@ -814,18 +1385,42 @@ namespace AppPrediosDemo.ViewModels
                         ClearErrors(K(nameof(PredioActual.NumeroIdentificacion)));
                     break;
 
-                case nameof(Predio.IdFuenteProceso):
-                case nameof(Predio.IdTipoProceso):
-                case nameof(Predio.IdEtapaProcesal):
-                    ValidateCatalogo(K(e.PropertyName!), (int?)typeof(Predio).GetProperty(e.PropertyName!)?.GetValue(PredioActual));
+
+                case nameof(Predio.AbogadoSustanciadorAsignado):
+                    ValidateRequiredString(
+                        K(nameof(PredioActual.AbogadoSustanciadorAsignado)),
+                        PredioActual.AbogadoSustanciadorAsignado);
+                    break;
+
+                case nameof(Predio.AbogadoRevisorAsignado):
+                    ValidateRequiredString(
+                        K(nameof(PredioActual.AbogadoRevisorAsignado)),
+                        PredioActual.AbogadoRevisorAsignado);
+                    break;
+
+                case nameof(Predio.FechaEntregaARevisor):
+                    ValidateDateReq(
+                        K(nameof(PredioActual.FechaEntregaARevisor)),
+                        PredioActual.FechaEntregaARevisor);
+                    break;
+
+                case nameof(Predio.FechaAsignacionReparto):
+                    ValidateDateReq(
+                        K(nameof(PredioActual.FechaAsignacionReparto)),
+                        PredioActual.FechaAsignacionReparto);
+                    break;
+                case nameof(Predio.NumeroReparto):
+                    ValidateNumeroReparto();
                     break;
 
                 default:
                     break;
+
             }
 
             GuardarCommand.RaiseCanExecuteChanged();
             UpdateDebug();
         }
+
     }
 }

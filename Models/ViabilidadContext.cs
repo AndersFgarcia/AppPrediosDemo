@@ -1,6 +1,8 @@
-﻿using System;
-using System.Configuration;
+﻿using AppPrediosDemo.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Configuration;
+using System.Reflection.Emit;
 
 namespace AppPrediosDemo.Models
 {
@@ -17,7 +19,12 @@ namespace AppPrediosDemo.Models
         public virtual DbSet<MedidaProcesal> MedidaProcesals { get; set; }
         public virtual DbSet<RegistroProceso> RegistroProcesos { get; set; }
         public virtual DbSet<TipoProceso> TipoProcesos { get; set; }
-        
+
+        public virtual DbSet<ConceptoFinal> ConceptoFinals { get; set; } = null!;
+        public virtual DbSet<TipoEstadoRevision> TipoEstadoRevisions { get; set; } = null!;
+        public virtual DbSet<TipoInforme> TipoInformes { get; set; } = null!;
+
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
@@ -161,7 +168,7 @@ namespace AppPrediosDemo.Models
                  .HasColumnName("IdConceptoPrevio")
                  .ValueGeneratedOnAdd()
                  .HasDefaultValueSql("NEXT VALUE FOR [AnalisisJuridico].[Seq_ConceptosPrevio]");
-                e.Property(x => x.Concepto).HasMaxLength(500); // Puedes ajustar el valor según tu necesidad
+                e.Property(x => x.Concepto); // Puedes ajustar el valor según tu necesidad
 
                 e.HasOne(x => x.IdRegistroProcesoNavigation)
                  .WithMany(p => p.ConceptosPrevios)
@@ -169,6 +176,112 @@ namespace AppPrediosDemo.Models
                  .OnDelete(DeleteBehavior.Restrict)
                  .HasConstraintName("FK_IdRegistroProceso_GestionJuridica");
             });
+
+            //modelBuilder.HasSequence<int>("Seq_ConceptoFinal", "AnalisisJuridico");
+
+            // ===== ConceptoFinal =====
+            mb.Entity<ConceptoFinal>(e =>
+            {
+                e.ToTable("ConceptoFinal", "AnalisisJuridico");
+
+                e.HasKey(x => x.IdConceptoFinal)
+                    .HasName("PK_IdConceptoFinal");
+
+                // Generación por secuencia:
+                e.Property(x => x.IdConceptoFinal)
+                    .HasDefaultValueSql("NEXT VALUE FOR AnalisisJuridico.Seq_ConceptoFinal");
+
+                // Viabilidad ahora puede ser NULL en la BD
+                e.Property(x => x.Viabilidad)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                e.Property(x => x.AbogadoSustanciadorAsignado)
+                    .HasMaxLength(1000)
+                    .IsUnicode(false);
+
+                e.Property(x => x.AbogadoRevisorAsignado)
+                    .HasMaxLength(1000)
+                    .IsUnicode(false);
+
+                e.Property(x => x.EstadoAprobacionCoordinadora)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
+
+                e.Property(x => x.EntregoCarpetaSoportes)
+                    .HasMaxLength(10)   
+                    .IsUnicode(false);
+                // ===== Navegaciones NUEVAS =====
+
+                // FK a RegistroProceso
+                e.HasOne(x => x.IdRegistroProcesoNavigation)
+                 .WithMany(p => p.ConceptoFinals)
+                 .HasForeignKey(x => x.IdRegistroProceso)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .HasConstraintName("FK_IdRegistroProceso_GestionJuridica_ConFin");
+
+                // FK a TipoInforme (opcional)
+                e.HasOne(x => x.IdTipoInformeNavigation)
+                 .WithMany(p => p.ConceptoFinals)
+                 .HasForeignKey(x => x.IdTipoInforme)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .HasConstraintName("FK_IdTipoInforme_TipoInforme");
+
+                // FK a TipoEstadoRevision (opcional)
+                e.HasOne(x => x.IdTipoEstadoRevisionNavigation)
+                 .WithMany(p => p.ConceptoFinals)
+                 .HasForeignKey(x => x.IdTipoEstadoRevision)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .HasConstraintName("FK_IdTipoEstadoRevision_TipoEstadoRevision");
+
+                e.Property(x => x.FechaRemisionSoportesAGestoraDocumental)
+                    .HasColumnName("FechaRemisionSoportesAGestoraDocumental");
+
+                e.Property(x => x.FechaRemisionInformeAGestoraDocumental)
+                    .HasColumnName("FechaRemisiónInformeAGestoraDocumental");
+
+                e.Property(x => x.FechaCargueInformeJuridicoExpOrfeo)
+                    .HasColumnName("FechaCargueInformeJurídicoExpOrfeo");
+
+                e.Property(x => x.FechaDeCargueDocsYSoportesExpOrfeo)
+                    .HasColumnName("FechaDeCargueDocsYSoportesExpOrfeo");
+
+                e.Property(x => x.FechaGestionEtapaSit)
+                    .HasColumnName("FechaGestionEtapaSIT");
+            });
+
+            // ===== Catálogo: TipoEstadoRevision =====
+            mb.Entity<TipoEstadoRevision>(e =>
+            {
+                e.ToTable("TipoEstadoRevision", "Catalogo");
+
+                e.HasKey(x => x.IdTipoEstadoRevision)
+                      .HasName("PK_IdTipoEstadoRevision");
+
+                e.Property(x => x.IdTipoEstadoRevision)
+                      .ValueGeneratedNever(); // Asume que la PK es manual
+
+                e.Property(x => x.NombreTipoEstadoRevision)
+                      .HasMaxLength(100)
+                      .IsUnicode(false);
+            });
+
+            // ===== Catálogo: TipoInforme =====
+            mb.Entity<TipoInforme>(e =>
+            {
+                e.ToTable("TipoInforme", "Catalogo");
+
+                e.HasKey(x => x.IdTipoInforme)
+                      .HasName("PK_IdTipoInforme");
+
+                e.Property(x => x.IdTipoInforme)
+                      .ValueGeneratedNever(); // Asume que la PK es manual
+
+                e.Property(x => x.NombreTipoInforme)
+                      .HasMaxLength(100)
+                      .IsUnicode(false);
+            });
+
 
             OnModelCreatingPartial(mb);
         }

@@ -39,6 +39,25 @@ namespace AppPrediosDemo.ViewModels
             Clarificacion = new MedidaItemVM(this, "PROCESOS DE CLARIFICACIÓN");
         }
 
+        // Limpia todos los valores de la pestaña de medidas
+        public void Limpiar()
+        {
+            void Clear(MedidaItemVM vm, bool clearTipo = false)
+            {
+                vm.Valor = null;
+                vm.Anotacion = null;
+                if (clearTipo) vm.TipoClasificacion = null;
+            }
+
+            Clear(Hipoteca);
+            Clear(Servidumbres);
+            Clear(MedidasCautelares);
+            Clear(Rupta, clearTipo: true);
+            Clear(RTDAF);
+            Clear(Oferta);
+            Clear(Clarificacion);
+        }
+
         // Método para convertir los datos del ViewModel a entidades (Modelos) para guardar en la DB
         public List<MedidaProcesal> ToEntities(int idEstudioTerreno)
         {
@@ -79,6 +98,9 @@ namespace AppPrediosDemo.ViewModels
         // Método para cargar datos desde la DB al ViewModel
         public void LoadFrom(IEnumerable<MedidaProcesal> rows)
         {
+            // Limpia primero para que no queden valores de cargas anteriores
+            Limpiar();
+
             foreach (var r in rows)
             {
                 // Usa el campo Objeto para saber a qué propiedad del ViewModel corresponde
@@ -113,15 +135,27 @@ namespace AppPrediosDemo.ViewModels
 
         private string? _valor;
         // Enlaza al ComboBox de Sí/No/Pendiente
-        public string? Valor { get => _valor; set => Set(ref _valor, value); }
+        public string? Valor
+        {
+            get => _valor;
+            set => Set(ref _valor, value);
+        }
 
         private string? _anotacion;
         // Enlaza al TextBox de anotaciones
-        public string? Anotacion { get => _anotacion; set => Set(ref _anotacion, value); }
+        public string? Anotacion
+        {
+            get => _anotacion;
+            set => Set(ref _anotacion, value);
+        }
 
         private string? _tipoClasificacion;
         // Enlaza al ComboBox de clasificación (solo usado por RUPTA)
-        public string? TipoClasificacion { get => _tipoClasificacion; set => Set(ref _tipoClasificacion, value); }
+        public string? TipoClasificacion
+        {
+            get => _tipoClasificacion;
+            set => Set(ref _tipoClasificacion, value);
+        }
 
         public MedidaItemVM(MedidasProcesalesViewModel owner, string objeto)
         {

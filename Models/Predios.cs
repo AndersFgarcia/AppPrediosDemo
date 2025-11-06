@@ -89,14 +89,29 @@ namespace AppPrediosDemo.Models
         private string? viab;
         public string? Viabilidad { get => viab; set => Set(ref viab, value); }
 
-        private string? tipoInf;
-        public string? TipoInforme { get => tipoInf; set => Set(ref tipoInf, value); }
+        // si ya no usas texto libre, puedes borrar esto
 
         private string? causalNV;
         public string? CausalNoViabilidad { get => causalNV; set => Set(ref causalNV, value); }
 
         private string? insPend;
         public string? InsumosPendientes { get => insPend; set => Set(ref insPend, value); }
+
+        // === Concepto final (FKs a catálogos) ===
+        private int? idTipoInforme;
+        public int? IdTipoInforme
+        {
+            get => idTipoInforme;
+            set => Set(ref idTipoInforme, value);
+        }
+
+        private int? idTipoEstadoRevision;
+        public int? IdTipoEstadoRevision
+        {
+            get => idTipoEstadoRevision;
+            set => Set(ref idTipoEstadoRevision, value);
+        }
+
 
         // Asignación y revisión
         private DateTime? fEntRev;
@@ -114,18 +129,25 @@ namespace AppPrediosDemo.Models
         private DateTime? fAsigRep;
         public DateTime? FechaAsignacionReparto { get => fAsigRep; set => Set(ref fAsigRep, value); }
 
-        private string? plazo;
-        public string? PlazoParaEntregaARevisor { get => plazo; set => Set(ref plazo, value); }
-
-        private string? estRev;
-        public string? EstadoRevision { get => estRev; set => Set(ref estRev, value); }
+        // NUEVO: coincide con la BD (datetime) y con el ViewModel
+        private DateTime? fPlazoRev;
+        public DateTime? FechaPlazoEntregaARevisor
+        {
+            get => fPlazoRev;
+            set => Set(ref fPlazoRev, value);
+        }
 
         private string? obsRev;
         public string? ObservacionesRevisor { get => obsRev; set => Set(ref obsRev, value); }
 
         // Gestión documental
-        private bool entrego;
-        public bool EntregoCarpetaSoportes { get => entrego; set => Set(ref entrego, value); }
+
+        private string? entregoCarpetaSoportes;
+        public string? EntregoCarpetaSoportes
+        {
+            get => entregoCarpetaSoportes;
+            set => Set(ref entregoCarpetaSoportes, value);
+        }
 
         private DateTime? fCoord;
         public DateTime? FechaEnvioACoordinacion { get => fCoord; set => Set(ref fCoord, value); }

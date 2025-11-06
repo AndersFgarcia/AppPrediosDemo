@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
-using AppPrediosDemo.Models; // <<<<< ¡DEBE ESTAR ESTA LÍNEA!
+using AppPrediosDemo.Models;
 
 namespace AppPrediosDemo.Models;
 
@@ -19,6 +19,7 @@ namespace AppPrediosDemo.Models;
 [Index("RadicadoOrfeo", Name = "Idx_RegistroProceso_RadicadoOrfeo")]
 public partial class RegistroProceso
 {
+
     [Key]
     public long IdRegistroProceso { get; set; }
 
@@ -34,11 +35,12 @@ public partial class RegistroProceso
     [Unicode(false)]
     public string? NumeroExpediente { get; set; }
 
-    public int IdFuenteProceso { get; set; }
+    // 🎯 CORRECCIÓN: Tipos de dato anulables (int?) para coincidir con la BD
+    public int? IdFuenteProceso { get; set; }
 
-    public int IdTipoProceso { get; set; }
+    public int? IdTipoProceso { get; set; }
 
-    public int IdEtapaProcesal { get; set; }
+    public int? IdEtapaProcesal { get; set; }
 
     [StringLength(10)]
     [Unicode(false)]
@@ -53,6 +55,9 @@ public partial class RegistroProceso
 
     [InverseProperty("IdRegistroProcesoNavigation")]
     public virtual ICollection<EstudioTerreno> EstudioTerrenos { get; set; } = new List<EstudioTerreno>();
+
+    // ===== NUEVA colección =====
+    public virtual ICollection<ConceptoFinal> ConceptoFinals { get; set; } = new HashSet<ConceptoFinal>();
 
     [ForeignKey("IdEtapaProcesal")]
     [InverseProperty("RegistroProcesos")]

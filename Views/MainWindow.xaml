@@ -4,78 +4,62 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:vm="clr-namespace:AppPrediosDemo.ViewModels"
         xmlns:infra="clr-namespace:AppPrediosDemo.Infrastructure"
-        Title="Gestión de Predios" Height="800" Width="1200"
-        WindowStartupLocation="CenterScreen" Background="#FAFAFA"
+        Title="Viabilidad Jurídica" Height="850" Width="1400"
+        WindowStartupLocation="CenterScreen" 
+        Background="{StaticResource BackgroundColor}"
         x:Name="Root">
 
-    <!-- Estilos -->
-    <Window.Resources>
-        <!-- Etiquetas -->
-        <Style x:Key="LabelCell" TargetType="TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,6,8,6"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-
-        <!-- Base para controles de entrada -->
-        <Style x:Key="InputCell" TargetType="FrameworkElement">
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="0,4,0,4"/>
-            <Setter Property="Height" Value="28"/>
-        </Style>
-
-        <!-- TextBox con borde rojo cuando hay errores de validación -->
-        <Style x:Key="TextInputWithValidation"
-           TargetType="TextBox"
-           BasedOn="{StaticResource InputCell}">
-            <Setter Property="Validation.ErrorTemplate">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <DockPanel>
-                            <Border BorderBrush="Red" BorderThickness="1">
-                                <AdornedElementPlaceholder/>
-                            </Border>
-                        </DockPanel>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Style.Triggers>
-                <Trigger Property="Validation.HasError" Value="True">
-                    <Setter Property="ToolTip"
-                        Value="{Binding RelativeSource={RelativeSource Self},
-                                        Path=(Validation.Errors)[0].ErrorContent}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- Combos -->
-        <Style x:Key="ComboCell" TargetType="ComboBox" BasedOn="{StaticResource InputCell}">
-            <Setter Property="MinWidth" Value="180"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        </Style>
-
-        <!-- TextBox multilínea -->
-        <Style x:Key="NoteBox" TargetType="TextBox" BasedOn="{StaticResource InputCell}">
-            <Setter Property="AcceptsReturn" Value="True"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="MinHeight" Value="70"/>
-            <Setter Property="VerticalAlignment" Value="Stretch"/>
-            <Setter Property="Height" Value="{x:Static sys:Double.NaN}"/>
-        </Style>
-
-        <!-- GroupBox -->
-        <Style TargetType="GroupBox">
-            <Setter Property="Margin" Value="0,0,0,14"/>
-            <Setter Property="Padding" Value="12"/>
-        </Style>
-    </Window.Resources>
-
-
-    <DockPanel Margin="16">
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="Gestión de Predios" FontSize="20" FontWeight="Bold"/>
-            <TextBlock Text="  ·  Captura y edición" Foreground="#666" Margin="6,4,0,0"/>
+    <DockPanel Margin="0">
+        <Border DockPanel.Dock="Top" 
+                CornerRadius="0"
+                Padding="20,16"
+                Margin="0,0,0,0"
+                Background="{StaticResource PrimaryColor}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <Grid Grid.Column="0" 
+                      Margin="0,0,20,0"
+                      VerticalAlignment="Center"
+                      HorizontalAlignment="Left">
+                    <Rectangle Fill="{StaticResource PrimaryColor}"
+                               Width="116"
+                               Height="86"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Center"/>
+                    <Image Source="/Resources/LOGO-ANT-2025.png"
+                           Width="100"
+                           Height="70"
+                           RenderOptions.BitmapScalingMode="HighQuality"
+                           Stretch="Uniform"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Center"/>
+                </Grid>
+                
+                <StackPanel Grid.Column="1" 
+                           Orientation="Horizontal" 
+                           VerticalAlignment="Center">
+                    <TextBlock Text="Viabilidad Jurídica" 
+                              FontSize="24" 
+                              FontWeight="Bold"
+                              Foreground="{StaticResource AccentColor}"
+                              VerticalAlignment="Center"/>
+                    <TextBlock Text=" • " 
+                              FontSize="20" 
+                              Foreground="White" 
+                              Opacity="0.8"
+                              VerticalAlignment="Center"
+                              Margin="8,0"/>
+                    <TextBlock Text="Agencia Nacional de Tierras" 
+                              FontSize="13" 
+                              Foreground="White"
+                              VerticalAlignment="Center"/>
         </StackPanel>
+            </Grid>
+        </Border>
 
         <TabControl>
 
@@ -113,24 +97,34 @@
                                 </Grid.ColumnDefinitions>
 
                                 <!-- Filtros -->
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ID" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ID" Style="{StaticResource LabelCell}"/>
                                 <TextBox   Grid.Row="0" Grid.Column="1"
-                                            Text="{Binding FiltroId, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,0"/>
+                                            Text="{Binding FiltroId, UpdateSourceTrigger=PropertyChanged}" 
+                                            Style="{StaticResource InputCell}"/>
 
-                                <TextBlock Grid.Row="0" Grid.Column="3" Text="FMI" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Grid.Row="0" Grid.Column="3" Text="FMI" Style="{StaticResource LabelCell}"/>
                                 <TextBox   Grid.Row="0" Grid.Column="4"
-                                            Text="{Binding FiltroFmi, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,0"/>
+                                            Text="{Binding FiltroFmi, UpdateSourceTrigger=PropertyChanged}" 
+                                            Style="{StaticResource InputCell}"/>
 
-                                <TextBlock Grid.Row="0" Grid.Column="6" Text="No. Expediente" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Grid.Row="0" Grid.Column="6" Text="No. Expediente" Style="{StaticResource LabelCell}"/>
                                 <TextBox   Grid.Row="0" Grid.Column="7"
-                                            Text="{Binding FiltroExpediente, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,0,0"/>
+                                            Text="{Binding FiltroExpediente, UpdateSourceTrigger=PropertyChanged}" 
+                                            Style="{StaticResource InputCell}"/>
 
                                 <!-- Buscar / Limpiar -->
                                 <StackPanel Grid.Row="0" Grid.Column="8"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
-                                    <Button Content="Buscar"  Width="90" Command="{Binding BuscarRegistrosCommand}" Margin="0,0,5,0"/>
-                                    <Button Content="Limpiar" Width="90" Command="{Binding LimpiarFiltrosCommand}"/>
+                                    <Button Content="Buscar"  
+                                            Width="110" 
+                                            Command="{Binding BuscarRegistrosCommand}" 
+                                            Margin="0,0,8,0"
+                                            Style="{StaticResource PrimaryButton}"/>
+                                    <Button Content="Limpiar" 
+                                            Width="110" 
+                                            Command="{Binding LimpiarFiltrosCommand}"
+                                            Style="{StaticResource SecondaryButton}"/>
                                 </StackPanel>
 
                                 <!-- Resultados -->
@@ -176,23 +170,32 @@
                         </GroupBox>
 
                         <!-- ========== BARRA DE ACCIONES SOBRE EL REGISTRO ========== -->
-                        <StackPanel Orientation="Horizontal" Margin="12,0,12,8">
+                        <Border Background="{StaticResource SurfaceColor}"
+                                BorderBrush="{StaticResource BorderColor}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16"
+                                Margin="12,0,12,16">
+                            <StackPanel Orientation="Horizontal">
                             <Button Content="Nuevo"
-                        Width="90"
-                        Margin="0,0,5,0"
-                        Command="{Binding NuevoCommand}"/>
+                                        Width="120"
+                                        Margin="0,0,10,0"
+                                        Command="{Binding NuevoCommand}"
+                                        Style="{StaticResource PrimaryButton}"/>
 
                             <Button Content="Guardar"
-                        Width="90"
-                        Margin="0,0,5,0"
-                        Command="{Binding GuardarCommand}"/>
+                                        Width="120"
+                                        Margin="0,0,10,0"
+                                        Command="{Binding GuardarCommand}"
+                                        Style="{StaticResource PrimaryButton}"/>
 
                             <Button Content="Cancelar"
-                        Width="90"
-                        Margin="0,0,5,0"
+                                        Width="120"
                         Command="{Binding CancelarCommand}"
-                        IsEnabled="{Binding PuedeEditarCampos}"/>
+                                        IsEnabled="{Binding PuedeEditarCampos}"
+                                        Style="{StaticResource SecondaryButton}"/>
                         </StackPanel>
+                        </Border>
 
                         <!-- =================== IDENTIFICACIÓN =================== -->
                         <GroupBox Header="Identificación">
@@ -597,7 +600,7 @@
                                 <DatePicker Grid.Row="0" Grid.Column="3"
                                             SelectedDate="{Binding PredioActual.FechaInformePrevioReportada}"
                                             IsEnabled="{Binding PredioActual.CuentaConInformeJuridicoPrevio}"
-                                            Style="{StaticResource InputCell}"/>
+                                            Style="{StaticResource DatePickerStyle}"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Concepto antiguo" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
@@ -636,14 +639,14 @@
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Fecha de informe" Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="1" Grid.Column="1"
                                             SelectedDate="{Binding PredioActual.FechaInforme}"
-                                            Style="{StaticResource InputCell}"
+                                            Style="{StaticResource DatePickerStyle}"
                                             IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Viabilidad" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="1" Grid.Column="3"
                                           ItemsSource="{Binding OpcionesViabilidad}"
                                           SelectedItem="{Binding PredioActual.Viabilidad, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                          Style="{StaticResource InputCell}"
+                                          Style="{StaticResource ComboCell}"
                                           IsEnabled="{Binding PuedeEditarCampos}"/>
 
 								<TextBlock Grid.Row="2" Grid.Column="0" Text="Tipo de informe" Style="{StaticResource LabelCell}"/>
@@ -694,7 +697,7 @@
                                Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="0" Grid.Column="1"
                                 SelectedDate="{Binding PredioActual.FechaEntregaARevisor}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="0" Grid.Column="2"
@@ -741,7 +744,7 @@
                                Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="2" Grid.Column="1"
                                 SelectedDate="{Binding PredioActual.FechaAsignacionReparto}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="2" Grid.Column="2"
@@ -751,7 +754,7 @@
                                 SelectedDate="{Binding PredioActual.FechaPlazoEntregaARevisor,
                                                        Mode=TwoWay,
                                                        UpdateSourceTrigger=PropertyChanged}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="3" Grid.Column="0"
@@ -811,7 +814,7 @@
                                Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="0" Grid.Column="3"
                                 SelectedDate="{Binding PredioActual.FechaEnvioACoordinacion}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="1" Grid.Column="0"
@@ -829,7 +832,7 @@
                                Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="1" Grid.Column="3"
                                 SelectedDate="{Binding PredioActual.FechaRemisionSoportesGestoraDocumental}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="2" Grid.Column="0"
@@ -837,7 +840,7 @@
                                Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="2" Grid.Column="1"
                                 SelectedDate="{Binding PredioActual.FechaRemisionInformeGestoraDocumental}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="2" Grid.Column="2"
@@ -845,7 +848,7 @@
                                Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="2" Grid.Column="3"
                                 SelectedDate="{Binding PredioActual.FechaCargueInformeJuridicoEnExpteOrfeo}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="3" Grid.Column="0"
@@ -853,7 +856,7 @@
                                Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="3" Grid.Column="1"
                                 SelectedDate="{Binding PredioActual.FechaCargueDocumentosYSoportesEnExpdteOrfeo}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="3" Grid.Column="2"
@@ -861,7 +864,7 @@
                                Style="{StaticResource LabelCell}"/>
                                 <DatePicker Grid.Row="3" Grid.Column="3"
                                 SelectedDate="{Binding PredioActual.FechaGestionEtapaSIT}"
-                                Style="{StaticResource InputCell}"
+                                Style="{StaticResource DatePickerStyle}"
                                 IsEnabled="{Binding PuedeEditarCampos}"/>
                             </Grid>
                         </GroupBox>

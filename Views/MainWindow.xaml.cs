@@ -21,14 +21,7 @@ namespace AppPrediosDemo
 
             Loaded += async (_, __) =>
             {
-                try
-                {
-                    await _vm.InitializeAsync();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Init:\n" + ex.Message, "Inicialización", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                await _vm.InitializeAsync();
             };
         }
 

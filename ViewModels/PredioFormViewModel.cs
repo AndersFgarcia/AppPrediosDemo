@@ -1,6 +1,7 @@
 ﻿using AppPrediosDemo.Infrastructure;
 using AppPrediosDemo.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -306,9 +307,38 @@ namespace AppPrediosDemo.ViewModels
                 await CargarCatalogosAsync();
                 await CargarDepartamentosAsync();
             }
+            catch (SqlException sqlEx)
+            {
+                string mensaje = "No se pudo conectar a la base de datos.\n\n" +
+                               "Verifique:\n" +
+                               "1. Que el servidor SQL Server esté accesible\n" +
+                               "2. Que la cadena de conexión sea correcta\n" +
+                               "3. Que tenga permisos de acceso\n\n" +
+                               "Puede configurar la conexión editando el archivo 'connectionstring.txt' en el directorio de la aplicación.\n\n" +
+                               $"Error: {sqlEx.Message}";
+                MessageBox.Show(mensaje, "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (System.Net.Sockets.SocketException)
+            {
+                string mensaje = "No se pudo conectar al servidor de base de datos.\n\n" +
+                               "Verifique que:\n" +
+                               "- El servidor esté en ejecución\n" +
+                               "- La red esté disponible\n" +
+                               "- La dirección del servidor sea correcta\n\n" +
+                               "Puede configurar la conexión editando el archivo 'connectionstring.txt' en el directorio de la aplicación.";
+                MessageBox.Show(mensaje, "Error de Conexión", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("cadena de conexión"))
+            {
+                string mensaje = "No se encontró la cadena de conexión.\n\n" +
+                               "Cree un archivo 'connectionstring.txt' en el directorio de la aplicación con la siguiente línea:\n\n" +
+                               "Server=nombre_servidor;Database=ViabilidadJuridica;User Id=usuario;Password=contraseña;Encrypt=False;TrustServerCertificate=True";
+                MessageBox.Show(mensaje, "Configuración Requerida", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
             catch (Exception ex)
             {
-                MessageBox.Show("Init:\n" + ex.Message);
+                string mensaje = "Error al inicializar la aplicación:\n\n" + ex.Message;
+                MessageBox.Show(mensaje, "Error de Inicialización", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -331,35 +361,53 @@ namespace AppPrediosDemo.ViewModels
 
         private async Task CargarTipoProcesosAsync()
         {
-            using var ctx = new ViabilidadContext();
-            var data = await ctx.TipoProcesos
-                .AsNoTracking()
-                .OrderBy(x => x.NombreTipoProceso)
-                .Select(x => new CatalogOption { Id = x.IdTipoProceso, Nombre = x.NombreTipoProceso })
-                .ToListAsync();
-            Rellenar(TipoProcesos, data);
+            try
+            {
+                using var ctx = new ViabilidadContext();
+                var data = await ctx.TipoProcesos
+                    .AsNoTracking()
+                    .OrderBy(x => x.NombreTipoProceso)
+                    .Select(x => new CatalogOption { Id = x.IdTipoProceso, Nombre = x.NombreTipoProceso })
+                    .ToListAsync();
+                Rellenar(TipoProcesos, data);
+            }
+            catch
+            {
+            }
         }
 
         private async Task CargarFuentesProcesoAsync()
         {
-            using var ctx = new ViabilidadContext();
-            var data = await ctx.FuenteProcesos
-                .AsNoTracking()
-                .OrderBy(x => x.NombreFuenteProceso)
-                .Select(x => new CatalogOption { Id = x.IdFuenteProceso, Nombre = x.NombreFuenteProceso })
-                .ToListAsync();
-            Rellenar(FuentesProceso, data);
+            try
+            {
+                using var ctx = new ViabilidadContext();
+                var data = await ctx.FuenteProcesos
+                    .AsNoTracking()
+                    .OrderBy(x => x.NombreFuenteProceso)
+                    .Select(x => new CatalogOption { Id = x.IdFuenteProceso, Nombre = x.NombreFuenteProceso })
+                    .ToListAsync();
+                Rellenar(FuentesProceso, data);
+            }
+            catch
+            {
+            }
         }
 
         private async Task CargarEtapasProcesalesAsync()
         {
-            using var ctx = new ViabilidadContext();
-            var data = await ctx.EtapaProcesals
-                .AsNoTracking()
-                .OrderBy(x => x.NombreEtapaProcesal)
-                .Select(x => new CatalogOption { Id = x.IdEtapaProcesal, Nombre = x.NombreEtapaProcesal })
-                .ToListAsync();
-            Rellenar(EtapasProcesales, data);
+            try
+            {
+                using var ctx = new ViabilidadContext();
+                var data = await ctx.EtapaProcesals
+                    .AsNoTracking()
+                    .OrderBy(x => x.NombreEtapaProcesal)
+                    .Select(x => new CatalogOption { Id = x.IdEtapaProcesal, Nombre = x.NombreEtapaProcesal })
+                    .ToListAsync();
+                Rellenar(EtapasProcesales, data);
+            }
+            catch
+            {
+            }
         }
 
         // ===== Localización =====
@@ -387,9 +435,8 @@ namespace AppPrediosDemo.ViewModels
                 ValidateLocalizacion();
                 UpdateDebug();
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("CargarDepartamentosAsync:\n" + ex.Message);
             }
         }
 
@@ -420,9 +467,8 @@ namespace AppPrediosDemo.ViewModels
                 ValidateLocalizacion();
                 UpdateDebug();
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("CargarMunicipiosAsync:\n" + ex.Message);
             }
         }
 
@@ -451,36 +497,47 @@ namespace AppPrediosDemo.ViewModels
                 ValidateLocalizacion();
                 UpdateDebug();
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("CargarCentrosPobladosAsync:\n" + ex.Message);
             }
         }
 
         private async Task CargarTiposInformeAsync()
         {
-            using var ctx = new ViabilidadContext();
-            var data = await ctx.TipoInformes
-                .AsNoTracking()
-                .OrderBy(x => x.NombreTipoInforme)
-                .Select(x => new CatalogOption { Id = x.IdTipoInforme, Nombre = x.NombreTipoInforme })
-                .ToListAsync();
+            try
+            {
+                using var ctx = new ViabilidadContext();
+                var data = await ctx.TipoInformes
+                    .AsNoTracking()
+                    .OrderBy(x => x.NombreTipoInforme)
+                    .Select(x => new CatalogOption { Id = x.IdTipoInforme, Nombre = x.NombreTipoInforme })
+                    .ToListAsync();
 
-            TiposInforme.Clear();
-            foreach (var item in data) TiposInforme.Add(item);
+                TiposInforme.Clear();
+                foreach (var item in data) TiposInforme.Add(item);
+            }
+            catch
+            {
+            }
         }
 
         private async Task CargarTiposEstadoRevisionAsync()
         {
-            using var ctx = new ViabilidadContext();
-            var data = await ctx.TipoEstadoRevisions
-                .AsNoTracking()
-                .OrderBy(x => x.NombreTipoEstadoRevision)
-                .Select(x => new CatalogOption { Id = x.IdTipoEstadoRevision, Nombre = x.NombreTipoEstadoRevision })
-                .ToListAsync();
+            try
+            {
+                using var ctx = new ViabilidadContext();
+                var data = await ctx.TipoEstadoRevisions
+                    .AsNoTracking()
+                    .OrderBy(x => x.NombreTipoEstadoRevision)
+                    .Select(x => new CatalogOption { Id = x.IdTipoEstadoRevision, Nombre = x.NombreTipoEstadoRevision })
+                    .ToListAsync();
 
-            TiposEstadoRevision.Clear();
-            foreach (var item in data) TiposEstadoRevision.Add(item);
+                TiposEstadoRevision.Clear();
+                foreach (var item in data) TiposEstadoRevision.Add(item);
+            }
+            catch
+            {
+            }
         }
 
         // ===== Validación =====

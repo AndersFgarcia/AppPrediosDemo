@@ -1,4 +1,5 @@
 ﻿using AppPrediosDemo.Models;
+using AppPrediosDemo.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Configuration;
@@ -29,9 +30,9 @@ namespace AppPrediosDemo.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-                var cs = ConfigurationManager.ConnectionStrings["ViabilidadJuridica"]?.ConnectionString;
+                var cs = ConnectionStringService.GetConnectionString();
                 if (string.IsNullOrWhiteSpace(cs))
-                    throw new InvalidOperationException("Falta cadena de conexión 'ViabilidadJuridica'.");
+                    throw new InvalidOperationException("No se encontró la cadena de conexión. Verifique el archivo 'connectionstring.txt' o 'App.config'.");
                 optionsBuilder.UseSqlServer(cs);
             }
         }

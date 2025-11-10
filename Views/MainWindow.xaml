@@ -5,6 +5,7 @@
         xmlns:vm="clr-namespace:AppPrediosDemo.ViewModels"
         xmlns:infra="clr-namespace:AppPrediosDemo.Infrastructure"
         Title="Viabilidad Jurídica" Height="850" Width="1400"
+        MinWidth="1000" MinHeight="600"
         WindowStartupLocation="CenterScreen" 
         Background="{StaticResource BackgroundColor}"
         x:Name="Root">
@@ -12,13 +13,16 @@
     <DockPanel Margin="0">
         <Border DockPanel.Dock="Top" 
                 CornerRadius="0"
-                Padding="20,16"
+                Padding="20,20,20,20"
+                MinWidth="800"
                 Margin="0,0,0,0"
                 Background="{StaticResource PrimaryColor}">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <Grid Grid.Column="0" 
@@ -26,77 +30,65 @@
                       VerticalAlignment="Center"
                       HorizontalAlignment="Left">
                     <Rectangle Fill="{StaticResource PrimaryColor}"
-                               Width="116"
-                               Height="86"
+                               Width="200"
+                               Height="150"
                                VerticalAlignment="Center"
                                HorizontalAlignment="Center"/>
                     <Image Source="/Resources/LOGO-ANT-2025.png"
-                           Width="100"
-                           Height="70"
+                           Width="180"
+                           Height="130"
                            RenderOptions.BitmapScalingMode="HighQuality"
                            Stretch="Uniform"
                            VerticalAlignment="Center"
                            HorizontalAlignment="Center"/>
                 </Grid>
                 
-                <StackPanel Grid.Column="1" 
-                           Orientation="Horizontal" 
-                           VerticalAlignment="Center">
-                    <TextBlock Text="Viabilidad Jurídica" 
-                              FontSize="24" 
-                              FontWeight="Bold"
-                              Foreground="{StaticResource AccentColor}"
-                              VerticalAlignment="Center"/>
-                    <TextBlock Text=" • " 
-                              FontSize="20" 
-                              Foreground="White" 
-                              Opacity="0.8"
-                              VerticalAlignment="Center"
-                              Margin="8,0"/>
-                    <TextBlock Text="Agencia Nacional de Tierras" 
-                              FontSize="13" 
-                              Foreground="White"
-                              VerticalAlignment="Center"/>
-        </StackPanel>
+                <TextBlock Grid.Column="1"
+                           Text="Viabilidad Jurídica" 
+                           FontFamily="{StaticResource PoppinsFont}"
+                           FontSize="32" 
+                           FontWeight="Bold"
+                           Foreground="White"
+                           VerticalAlignment="Center"
+                           Margin="0,0,20,0"/>
+                
+                <TextBlock Grid.Column="3"
+                           x:Name="UserNameTextBlock"
+                           FontFamily="{StaticResource PoppinsFont}"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Foreground="White"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Left"
+                           Margin="0,0,0,0"/>
             </Grid>
         </Border>
 
         <TabControl>
 
-            <!-- ========== 1) IDENTIFICACIÓN ========== -->
             <TabItem Header="Identificación">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8,12,8">
                     <StackPanel>
 
-                        <!-- =================== CONSULTA =================== -->
-                        <GroupBox Header="Consulta" Margin="12">
+                        <GroupBox Header="Consulta" Margin="12,8,12,12">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="200"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- la última columna ahora es "*" -->
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
-                                    <!-- ID lbl   -->
                                     <ColumnDefinition Width="140"/>
-                                    <!-- ID txt   -->
                                     <ColumnDefinition Width="16"/>
                                     <ColumnDefinition Width="Auto"/>
-                                    <!-- FMI lbl  -->
                                     <ColumnDefinition Width="140"/>
-                                    <!-- FMI txt  -->
                                     <ColumnDefinition Width="16"/>
                                     <ColumnDefinition Width="Auto"/>
-                                    <!-- Exp lbl  -->
                                     <ColumnDefinition Width="160"/>
-                                    <!-- Exp txt  -->
                                     <ColumnDefinition Width="*"/>
-                                    <!-- botones  -->
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Filtros -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="ID" Style="{StaticResource LabelCell}"/>
                                 <TextBox   Grid.Row="0" Grid.Column="1"
                                             Text="{Binding FiltroId, UpdateSourceTrigger=PropertyChanged}" 
@@ -112,7 +104,6 @@
                                             Text="{Binding FiltroExpediente, UpdateSourceTrigger=PropertyChanged}" 
                                             Style="{StaticResource InputCell}"/>
 
-                                <!-- Buscar / Limpiar -->
                                 <StackPanel Grid.Row="0" Grid.Column="8"
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
@@ -127,15 +118,13 @@
                                             Style="{StaticResource SecondaryButton}"/>
                                 </StackPanel>
 
-                                <!-- Resultados -->
                                 <DataGrid Grid.Row="1" Grid.ColumnSpan="9" Margin="0,8,0,0"
                   ItemsSource="{Binding ResultadosBusqueda}"
                   SelectedItem="{Binding ResultadoSeleccionado}"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
-                  CanUserAddRows="False">
+                                    CanUserAddRows="False">
                                     <DataGrid.Columns>
-                                        <!-- ID = IdPostulacion -->
                                         <DataGridTextColumn Header="ID"
                         Binding="{Binding IdPostulacion}"
                         Width="120"/>
@@ -169,7 +158,6 @@
                             </Grid>
                         </GroupBox>
 
-                        <!-- ========== BARRA DE ACCIONES SOBRE EL REGISTRO ========== -->
                         <Border Background="{StaticResource SurfaceColor}"
                                 BorderBrush="{StaticResource BorderColor}"
                                 BorderThickness="1"
@@ -197,7 +185,6 @@
                         </StackPanel>
                         </Border>
 
-                        <!-- =================== IDENTIFICACIÓN =================== -->
                         <GroupBox Header="Identificación">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -211,7 +198,6 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Fila 0 -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="ID" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="0" Grid.Column="1"
                              Text="{Binding PredioActual.ID, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -224,7 +210,6 @@
                              Style="{StaticResource InputCell}"
                              IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Fila 1 -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="No. Expediente" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="1" Grid.Column="1"
                              Text="{Binding PredioActual.NoExpediente, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -241,7 +226,6 @@
                             </Grid>
                         </GroupBox>
 
-                        <!-- =================== PROCESO AGRARIO =================== -->
                         <GroupBox Header="Proceso agrario" Margin="0,12,0,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -255,7 +239,6 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Fila 0 -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo de proceso agrario" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
                               ItemsSource="{Binding TipoProcesos}"
@@ -272,7 +255,6 @@
                               SelectedValue="{Binding PredioActual.IdEtapaProcesal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                               IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Fila 1 -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="ID ORFEO" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource InputCell}"
                              Text="{Binding PredioActual.RadicadoOrfeo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -289,13 +271,11 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ======= 2) UBICACIÓN + TITULARIDAD ======= -->
             <TabItem Header="Ubicación y Titularidad">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8,12,8">
                     <StackPanel>
 
-                        <!-- UBICACIÓN REGISTRAL -->
-                        <GroupBox Header="Ubicación registral">
+                        <GroupBox Header="Ubicación registral" Margin="12,8,12,12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -309,7 +289,6 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Departamento -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Departamento" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Departamentos}"
@@ -317,7 +296,6 @@
                                           DisplayMemberPath="Nombre"
                                           IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Municipio -->
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Municipio" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Municipios}"
@@ -326,7 +304,6 @@
                                           IsEditable="False"
                                           IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Centro poblado -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Centro poblado" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding CentrosPoblados}"
@@ -358,7 +335,6 @@
                             </Grid>
                         </GroupBox>
 
-                        <!-- TITULARIDAD -->
                         <GroupBox Header="Titularidad y tradición">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -374,18 +350,15 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Fila 0 -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo de persona titular" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PredioActual.PersonaTitular, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Nombre propietario(s)" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding PredioActual.NombrePropietarios, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Fila 1 -->
                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Apellido propietario(s)" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding PredioActual.ApellidoPropietario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Fila 2 -->
                                 <TextBlock Grid.Row="2" Grid.Column="0"
                                            Text="Número identificación (CC/NIT)"
                                            Style="{StaticResource LabelCell}"/>
@@ -399,11 +372,9 @@
                                          Style="{StaticResource TextInputWithValidation}"
                                          IsEnabled="{Binding PuedeEditarCampos}"/>
 
-
                                 <TextBlock Grid.Row="2" Grid.Column="2" Text="Acreditación de la propiedad" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.TituloOriginario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Fila 3 -->
                                 <TextBlock Grid.Row="3" Grid.Column="0" Text="Naturaleza jurídica del predio" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
                                          Text="{Binding PredioActual.AnalisisNaturalezaUltimaTradicion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -416,13 +387,11 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ======= 3) GRAVÁMENES Y AFECTACIONES ======= -->
             <TabItem Header="Gravámenes y afectaciones">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8,12,8">
                     <StackPanel>
 
-                        <!-- 1. Gravámenes -->
-                        <GroupBox Header="Gravámenes">
+                        <GroupBox Header="Gravámenes" Margin="12,8,12,12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -436,7 +405,6 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Hipoteca -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Hipoteca (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Medidas.ValoresSN}"
@@ -445,9 +413,8 @@
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Anotación HIPOTECA" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="0" Grid.Column="3" Style="{StaticResource NoteBox}"
                                          Text="{Binding Medidas.Hipoteca.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Servidumbres -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Servidumbres (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Medidas.ValoresSN}"
@@ -459,7 +426,6 @@
                                          Text="{Binding Medidas.Servidumbres.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Medidas cautelares -->
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Medidas cautelares (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Medidas.ValoresSN}"
@@ -488,7 +454,6 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Fila 0 -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="RUPTA (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Medidas.ValoresSN}"
@@ -501,7 +466,6 @@
                                           SelectedItem="{Binding Medidas.Rupta.TipoClasificacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                           IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Fila 1: Anotación -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Anotación RUPTA" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource NoteBox}"
                                          Text="{Binding Medidas.Rupta.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -511,7 +475,6 @@
 
                         <Separator Margin="0,15"/>
 
-                        <!-- 3. Otras afectaciones -->
                         <GroupBox Header="Otras afectaciones">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -526,7 +489,6 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- RTDAF -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="RTDAF Ley 1448 (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Medidas.ValoresSN}"
@@ -538,7 +500,6 @@
                                          Text="{Binding Medidas.RTDAF.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Oferta -->
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Oferta otras entidades (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Medidas.ValoresSN}"
@@ -550,7 +511,6 @@
                                          Text="{Binding Medidas.Oferta.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Clarificación -->
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Procesos de clarificación (Sí/No/Pendiente)" Style="{StaticResource LabelCell}"/>
                                 <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
                                           ItemsSource="{Binding Medidas.ValoresSN}"
@@ -569,12 +529,11 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- ======= 4) CONCEPTO JURÍDICO ======= -->
             <TabItem Header="Concepto jurídico">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8,12,8">
                     <StackPanel>
 
-                        <GroupBox Header="ANÁLISIS JURÍDICO / CONCEPTO PREVIO">
+                        <GroupBox Header="ANÁLISIS JURÍDICO / CONCEPTO PREVIO" Margin="12,8,12,12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -671,12 +630,11 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-            <!-- ======= 5) ASIGNACIÓN Y REVISIÓN ======= -->
             <TabItem Header="Asignación y revisión">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8,12,8">
                     <StackPanel>
 
-                        <GroupBox Header="Asignación y revisión">
+                        <GroupBox Header="Asignación y revisión" Margin="12,8,12,12">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -724,7 +682,6 @@
                              Style="{StaticResource InputCell}"
                              IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- # Reparto con validación de número entero opcional -->
                                 <TextBlock Grid.Row="1" Grid.Column="2"
                                            Text="# Reparto"
                                            Style="{StaticResource LabelCell}"/>

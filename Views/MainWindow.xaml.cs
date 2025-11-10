@@ -14,16 +14,16 @@ namespace AppPrediosDemo
         {
             InitializeComponent();
 
-            // Instancia del VM (el constructor del VM NO toca la BD)
+            UserNameTextBlock.Text = Environment.UserName;
+
             _vm = new PredioFormViewModel();
             DataContext = _vm;
 
-            // Carga de catálogos/cascadas SOLO en tiempo de ejecución (no en diseñador)
             Loaded += async (_, __) =>
             {
                 try
                 {
-                    await _vm.InitializeAsync(); // adentro llama LoadAsync() y luego ValidateAll()
+                    await _vm.InitializeAsync();
                 }
                 catch (Exception ex)
                 {
@@ -32,7 +32,6 @@ namespace AppPrediosDemo
             };
         }
 
-        // ====================== UTILIDADES DE PRUEBA (OPCIONAL, NO SE INVOCAN) ======================
         private void ProbarConexionBD()
         {
             try
@@ -68,7 +67,6 @@ namespace AppPrediosDemo
                     return;
                 }
 
-                // 1) RegistroProceso -> PK por SEQUENCE
                 var rp = new RegistroProceso
                 {
                     IdPostulacion = "P_TEST",
@@ -78,9 +76,8 @@ namespace AppPrediosDemo
                     IdEtapaProcesal = etapaId
                 };
                 ctx.RegistroProcesos.Add(rp);
-                ctx.SaveChanges(); // genera rp.IdRegistroProceso
+                ctx.SaveChanges();
 
-                // 2) EstudioTerreno -> PK por SEQUENCE
                 var et = new EstudioTerreno
                 {
                     IdRegistroProceso = rp.IdRegistroProceso,
@@ -91,7 +88,6 @@ namespace AppPrediosDemo
                 ctx.EstudioTerrenos.Add(et);
                 ctx.SaveChanges();
 
-                // 3) MedidaProcesal -> PK por SEQUENCE
                 var mp = new MedidaProcesal
                 {
                     IdEstudioTerreno = et.IdEstudioTerreno,
@@ -100,7 +96,6 @@ namespace AppPrediosDemo
                 };
                 ctx.MedidaProcesals.Add(mp);
 
-                // 4) ConceptosPrevio -> PK por SEQUENCE (propiedad = IdGestionJuridica)
                 var cp = new ConceptosPrevio
                 {
                     IdRegistroProceso = rp.IdRegistroProceso,

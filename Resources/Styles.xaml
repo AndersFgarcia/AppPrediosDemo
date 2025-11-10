@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     
+    <FontFamily x:Key="PoppinsFont">Poppins</FontFamily>
+    
     <Color x:Key="PrimaryColorValue">#1C7E59</Color>
     <Color x:Key="PrimaryDarkColorValue">#155A3F</Color>
     <Color x:Key="PrimaryLightColorValue">#239A6B</Color>
@@ -37,6 +39,7 @@
     <SolidColorBrush x:Key="TextSecondaryColor" Color="#666666"/>
     
     <Style x:Key="HeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
         <Setter Property="FontSize" Value="24"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryColor}"/>
@@ -44,12 +47,14 @@
     </Style>
     
     <Style x:Key="SubHeaderTextStyle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryColor}"/>
     </Style>
     
     <Style x:Key="LabelCell" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="16,8,12,8"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
@@ -59,6 +64,7 @@
     </Style>
     
     <Style x:Key="InputCell" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,4,0,4"/>
         <Setter Property="Height" Value="36"/>
@@ -125,6 +131,7 @@
     </Style>
     
     <Style x:Key="ComboCell" TargetType="ComboBox">
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,4,0,4"/>
         <Setter Property="Height" Value="36"/>
@@ -152,6 +159,7 @@
     </Style>
     
     <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
         <Setter Property="Background" Value="{StaticResource AccentColor}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -164,7 +172,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border Background="{TemplateBinding Background}"
-                            CornerRadius="4"
+                            CornerRadius="8"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" 
                                         VerticalAlignment="Center"/>
@@ -187,7 +195,8 @@
     </Style>
     
     <Style x:Key="SecondaryButton" TargetType="Button">
-        <Setter Property="Background" Value="{StaticResource SecondaryColor}"/>
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
+        <Setter Property="Background" Value="{StaticResource AccentColor}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="20,10"/>
@@ -201,7 +210,7 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4"
+                            CornerRadius="8"
                             Padding="{TemplateBinding Padding}">
                         <ContentPresenter HorizontalAlignment="Center" 
                                         VerticalAlignment="Center"/>
@@ -211,10 +220,10 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{StaticResource SecondaryDarkColor}"/>
+                <Setter Property="Background" Value="{StaticResource AccentDarkColor}"/>
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{StaticResource SecondaryDarkColor}"/>
+                <Setter Property="Background" Value="{StaticResource AccentDarkColor}"/>
             </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Background" Value="#BDBDBD"/>
@@ -224,9 +233,10 @@
     </Style>
     
     <Style x:Key="DatePickerStyle" TargetType="DatePicker">
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,4,0,4"/>
-        <Setter Property="Height" Value="36"/>
+        <Setter Property="Height" Value="32"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderColor}"/>
@@ -235,7 +245,23 @@
         <Style.Resources>
             <Style TargetType="DatePickerTextBox">
                 <Setter Property="BorderThickness" Value="0"/>
-                <Setter Property="Padding" Value="12,8"/>
+                <Setter Property="Padding" Value="12,0,12,0"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="#333333"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Stretch"/>
+                <Style.Resources>
+                    <Style TargetType="TextBox">
+                        <Setter Property="Foreground" Value="#333333"/>
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="Padding" Value="0,6,0,6"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Setter Property="VerticalAlignment" Value="Stretch"/>
+                        <Setter Property="MinHeight" Value="20"/>
+                    </Style>
+                </Style.Resources>
             </Style>
         </Style.Resources>
         <Style.Triggers>
@@ -293,40 +319,66 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0,8,0,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TabPanel Grid.Row="0" 
+                                  IsItemsHost="True" 
+                                  HorizontalAlignment="Center"/>
+                        <ContentPresenter Grid.Row="1" 
+                                        ContentSource="SelectedContent"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
     
     <Style TargetType="TabItem">
+        <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
                     <Border Name="Border"
-                            Background="Transparent"
+                            Background="{StaticResource AccentLightColor}"
                             BorderThickness="0"
+                            CornerRadius="8"
                             Margin="0,0,4,0"
-                            Padding="20,12">
+                            Padding="20,8">
                         <ContentPresenter ContentSource="Header"
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{StaticResource AccentColor}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource PrimaryColor}"/>
                             <Setter Property="Foreground" Value="White"/>
                             <Setter Property="FontWeight" Value="SemiBold"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="False">
-                            <Setter Property="Foreground" Value="{StaticResource TextSecondaryColor}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource AccentLightColor}"/>
+                            <Setter Property="Foreground" Value="White"/>
                             <Setter Property="FontWeight" Value="Normal"/>
                         </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{StaticResource HoverColor}"/>
-                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsSelected" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Border" Property="Background" Value="{StaticResource AccentColor}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="Padding" Value="20,12"/>
+        <Setter Property="Padding" Value="20,8"/>
         <Setter Property="Margin" Value="0,0,4,0"/>
     </Style>
     

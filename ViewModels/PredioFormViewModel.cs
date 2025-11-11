@@ -208,8 +208,11 @@ namespace AppPrediosDemo.ViewModels
             get => _resultadoSeleccionado;
             set
             {
-                if (Set(ref _resultadoSeleccionado, value) && value is not null)
-                    _ = CargarPredioDesdeRegistroAsync(value.IdRegistroProceso);
+                if (Set(ref _resultadoSeleccionado, value))
+                {
+                    EditarRegistroSeleccionadoCommand.RaiseCanExecuteChanged();
+                    // Ya no cargamos automáticamente al seleccionar, solo cuando se presiona Editar
+                }
             }
         }
 
@@ -224,6 +227,10 @@ namespace AppPrediosDemo.ViewModels
         public RelayCommand CancelarCommand { get; }
         public RelayCommand BuscarRegistrosCommand { get; }
         public RelayCommand LimpiarFiltrosCommand { get; }
+        public RelayCommand EditarRegistroSeleccionadoCommand { get; }
+        
+        // Evento para notificar cambio de pestaña
+        public event Action? CambiarAPestañaNuevoRegistro;
 
         // ===== Debug =====
         private string _debugInfo = "";
@@ -249,6 +256,7 @@ namespace AppPrediosDemo.ViewModels
             CancelarCommand = new RelayCommand(Cancelar, () => true);
             BuscarRegistrosCommand = new RelayCommand(async () => await BuscarAsync(), () => true);
             LimpiarFiltrosCommand = new RelayCommand(LimpiarFiltros, () => true);
+            EditarRegistroSeleccionadoCommand = new RelayCommand(EditarRegistroSeleccionado, () => ResultadoSeleccionado != null);
             PredioActual = new Predio();
 
             Modo = ModoFormulario.Ninguno;
@@ -295,7 +303,8 @@ namespace AppPrediosDemo.ViewModels
                 !string.IsNullOrWhiteSpace(PredioActual.AbogadoSustanciadorAsignado) &&
                 !string.IsNullOrWhiteSpace(PredioActual.AbogadoRevisorAsignado) &&
                 PredioActual.FechaEntregaARevisor.HasValue &&
-                PredioActual.FechaAsignacionReparto.HasValue;
+                PredioActual.FechaAsignacionReparto.HasValue &&
+                PredioActual.FechaPlazoEntregaARevisor.HasValue;
         }
 
 
@@ -606,6 +615,7 @@ namespace AppPrediosDemo.ViewModels
             ValidateRequiredString(K(nameof(PredioActual.AbogadoRevisorAsignado)), PredioActual.AbogadoRevisorAsignado);
             ValidateDateReq(K(nameof(PredioActual.FechaEntregaARevisor)), PredioActual.FechaEntregaARevisor);
             ValidateDateReq(K(nameof(PredioActual.FechaAsignacionReparto)), PredioActual.FechaAsignacionReparto);
+            ValidateDateReq(K(nameof(PredioActual.FechaPlazoEntregaARevisor)), PredioActual.FechaPlazoEntregaARevisor);
 
             ValidateNumeroReparto();
 
@@ -707,6 +717,16 @@ namespace AppPrediosDemo.ViewModels
 
         // ===== Comandos =====
         private Predio _backup = new();
+        
+        // Método público para habilitar modo nuevo sin limpiar datos
+        public void HabilitarModoNuevo()
+        {
+            if (Modo == ModoFormulario.Ninguno)
+            {
+                Modo = ModoFormulario.Nuevo;
+            }
+        }
+        
         private void Nuevo()
         {
 
@@ -1408,6 +1428,17 @@ namespace AppPrediosDemo.ViewModels
             FiltroExpediente = null;
             ResultadosBusqueda.Clear();
             ResultadoSeleccionado = null;
+        }
+
+        private async void EditarRegistroSeleccionado()
+        {
+            if (ResultadoSeleccionado is null)
+                return;
+
+            await CargarPredioDesdeRegistroAsync(ResultadoSeleccionado.IdRegistroProceso);
+            
+            // Notificar para cambiar de pestaña
+            CambiarAPestañaNuevoRegistro?.Invoke();
         }
 
         // ===== Predio change hook =====

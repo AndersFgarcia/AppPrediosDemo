@@ -7,8 +7,8 @@ namespace AppPrediosDemo.ViewModels
 {
     public class MedidasProcesalesViewModel : ViewModelBase
     {
-        // Opciones de valor general para todos los ComboBox (Sí/No/Pendiente)
-        public IReadOnlyList<string> ValoresSN { get; } = new[] { "SI", "NO", "PENDIENTE" };
+        // Opciones de valor general para todos los ComboBox (Sí/No/Pendiente/Sin definir)
+        public IReadOnlyList<string> ValoresSN { get; } = new[] { "SIN DEFINIR", "SI", "NO", "PENDIENTE" };
 
         // Opciones combinadas para el ComboBox de clasificación de RUPTA (TipoClasificacion)
         public IReadOnlyList<string> RuptaClasificacionOpciones { get; } = new[]
@@ -44,7 +44,7 @@ namespace AppPrediosDemo.ViewModels
         {
             void Clear(MedidaItemVM vm, bool clearTipo = false)
             {
-                vm.Valor = null;
+                vm.Valor = "SIN DEFINIR"; // Todos los campos usan "SIN DEFINIR" por defecto
                 vm.Anotacion = null;
                 if (clearTipo) vm.TipoClasificacion = null;
             }
@@ -66,8 +66,12 @@ namespace AppPrediosDemo.ViewModels
             // Lógica para añadir una medida procesal a la lista solo si tiene datos
             void Add(MedidaItemVM vm, bool incluirTipo = false)
             {
-                // Solo retorna si Valor, Anotacion Y TipoClasificacion (si aplica) están vacíos.
-                if (string.IsNullOrWhiteSpace(vm.Valor) &&
+                // Si el valor es "SIN DEFINIR", tratarlo como vacío para no guardar
+                var valor = vm.Valor?.Trim().ToUpperInvariant();
+                var esSinDefinir = valor == "SIN DEFINIR" || string.IsNullOrWhiteSpace(vm.Valor);
+                
+                // Solo retorna si Valor es "SIN DEFINIR" o vacío, Anotacion Y TipoClasificacion (si aplica) están vacíos.
+                if (esSinDefinir &&
                     string.IsNullOrWhiteSpace(vm.Anotacion) &&
                     (!incluirTipo || string.IsNullOrWhiteSpace(vm.TipoClasificacion)))
                     return;
@@ -76,14 +80,15 @@ namespace AppPrediosDemo.ViewModels
                 {
                     IdEstudioTerreno = idEstudioTerreno,
                     Objeto = vm.Objeto,
-                    Valor = vm.Valor ?? "",
+                    // Si es "SIN DEFINIR", guardar como cadena vacía
+                    Valor = esSinDefinir ? "" : (vm.Valor ?? ""),
                     Anotacion = vm.Anotacion,
                     // Incluye TipoClasificacion solo si 'incluirTipo' es true (solo para RUPTA)
                     TipoClasificacion = incluirTipo ? vm.TipoClasificacion : null
                 });
             }
 
-            // Llamadas a la función Add
+            // Llamadas a la función Add (todos los campos aceptan "SIN DEFINIR")
             Add(Hipoteca);
             Add(Servidumbres);
             Add(MedidasCautelares);
@@ -118,7 +123,8 @@ namespace AppPrediosDemo.ViewModels
 
                 if (t is null) continue;
 
-                t.Valor = r.Valor;
+                // Todos los campos muestran "SIN DEFINIR" cuando están vacíos
+                t.Valor = string.IsNullOrWhiteSpace(r.Valor) ? "SIN DEFINIR" : r.Valor;
                 t.Anotacion = r.Anotacion;
 
                 // Carga TipoClasificacion solo si es el objeto RUPTA

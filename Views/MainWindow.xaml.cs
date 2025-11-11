@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using System.Windows.Media;
 using AppPrediosDemo.Models;
 using AppPrediosDemo.ViewModels;
 
@@ -19,9 +20,22 @@ namespace AppPrediosDemo
             _vm = new PredioFormViewModel();
             DataContext = _vm;
 
-            Loaded += async (_, __) =>
+            // Suscribirse al evento para cambiar a "Nuevo Registro"
+            _vm.CambiarAPestañaNuevoRegistro += () =>
+            {
+                MostrarNuevoRegistro();
+            };
+
+            Loaded += async (sender, e) =>
             {
                 await _vm.InitializeAsync();
+                
+                // Por defecto mostrar "Nuevo Registro" y habilitar campos
+                MostrarNuevoRegistro();
+                if (_vm.Modo == ViewModels.ModoFormulario.Ninguno)
+                {
+                    _vm.HabilitarModoNuevo();
+                }
             };
         }
 
@@ -110,6 +124,54 @@ namespace AppPrediosDemo
             catch (Exception ex)
             {
                 MessageBox.Show($"Error en prueba EF:\n{ex}", "Prueba EF + SEQUENCE");
+            }
+        }
+
+        private void BtnNuevoRegistro_Click(object sender, RoutedEventArgs e)
+        {
+            MostrarNuevoRegistro();
+        }
+
+        private void BtnConsultar_Click(object sender, RoutedEventArgs e)
+        {
+            MostrarConsultar();
+        }
+
+        private void MostrarNuevoRegistro()
+        {
+            if (NuevoRegistroContent != null && ConsultarContent != null)
+            {
+                NuevoRegistroContent.Visibility = Visibility.Visible;
+                ConsultarContent.Visibility = Visibility.Collapsed;
+                
+                // Mostrar solo el botón "Consultar", ocultar "Nuevo Registro"
+                if (BtnNuevoRegistro != null && BtnConsultar != null)
+                {
+                    BtnNuevoRegistro.Visibility = Visibility.Collapsed;
+                    BtnConsultar.Visibility = Visibility.Visible;
+                }
+                
+                // Habilitar campos si es necesario
+                if (_vm.Modo == ViewModels.ModoFormulario.Ninguno)
+                {
+                    _vm.HabilitarModoNuevo();
+                }
+            }
+        }
+
+        private void MostrarConsultar()
+        {
+            if (NuevoRegistroContent != null && ConsultarContent != null)
+            {
+                NuevoRegistroContent.Visibility = Visibility.Collapsed;
+                ConsultarContent.Visibility = Visibility.Visible;
+                
+                // Mostrar solo el botón "Nuevo Registro", ocultar "Consultar"
+                if (BtnNuevoRegistro != null && BtnConsultar != null)
+                {
+                    BtnNuevoRegistro.Visibility = Visibility.Visible;
+                    BtnConsultar.Visibility = Visibility.Collapsed;
+                }
             }
         }
     }

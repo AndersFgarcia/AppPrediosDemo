@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\LOGO-ANT-2025.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +28,7 @@
       <SubType>Designer</SubType>
     </Resource>
     <Resource Include="Resources\LOGO-ANT-2025.png" />
+    <Resource Include="Resources\LOGO-ANT-2025.ico" />
   </ItemGroup>
 
   <ItemGroup>

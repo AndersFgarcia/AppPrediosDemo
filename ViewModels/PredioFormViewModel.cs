@@ -228,6 +228,7 @@ namespace AppPrediosDemo.ViewModels
         public RelayCommand BuscarRegistrosCommand { get; }
         public RelayCommand LimpiarFiltrosCommand { get; }
         public RelayCommand EditarRegistroSeleccionadoCommand { get; }
+        public RelayCommand CancelarEdicionCommand { get; }
         
         // Evento para notificar cambio de pestaña
         public event Action? CambiarAPestañaNuevoRegistro;
@@ -257,6 +258,7 @@ namespace AppPrediosDemo.ViewModels
             BuscarRegistrosCommand = new RelayCommand(async () => await BuscarAsync(), () => true);
             LimpiarFiltrosCommand = new RelayCommand(LimpiarFiltros, () => true);
             EditarRegistroSeleccionadoCommand = new RelayCommand(EditarRegistroSeleccionado, () => ResultadoSeleccionado != null);
+            CancelarEdicionCommand = new RelayCommand(CancelarEdicion, () => Modo == ModoFormulario.Edicion);
             PredioActual = new Predio();
 
             Modo = ModoFormulario.Ninguno;
@@ -1437,8 +1439,23 @@ namespace AppPrediosDemo.ViewModels
 
             await CargarPredioDesdeRegistroAsync(ResultadoSeleccionado.IdRegistroProceso);
             
-            // Notificar para cambiar de pestaña
-            CambiarAPestañaNuevoRegistro?.Invoke();
+            // Ya no cambiamos de pestaña, el formulario se muestra en la misma sección de Consultar
+            // CambiarAPestañaNuevoRegistro?.Invoke(); // Comentado - se edita en la misma sección
+            
+            // Notificar que se cambió el modo para actualizar la UI
+            OnPropertyChanged(nameof(Modo));
+            CancelarEdicionCommand.RaiseCanExecuteChanged();
+        }
+        
+        private void CancelarEdicion()
+        {
+            // Volver al modo Ninguno y limpiar la selección
+            Modo = ModoFormulario.Ninguno;
+            ResultadoSeleccionado = null;
+            PredioActual = new Predio();
+            Medidas.Limpiar();
+            IdLocalizacionSeleccionada = null;
+            CancelarEdicionCommand.RaiseCanExecuteChanged();
         }
 
         // ===== Predio change hook =====

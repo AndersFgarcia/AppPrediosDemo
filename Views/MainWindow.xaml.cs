@@ -25,6 +25,15 @@ namespace AppPrediosDemo
             {
                 MostrarNuevoRegistro();
             };
+            
+            // Suscribirse a cambios en Modo para controlar la visibilidad en Consultar
+            _vm.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(_vm.Modo))
+                {
+                    ActualizarVistaConsultar();
+                }
+            };
 
             Loaded += async (sender, e) =>
             {
@@ -151,6 +160,13 @@ namespace AppPrediosDemo
                     BtnConsultar.Visibility = Visibility.Visible;
                 }
                 
+                // Mostrar título correspondiente
+                if (TituloConsultar != null && TituloNuevoRegistro != null)
+                {
+                    TituloConsultar.Visibility = Visibility.Visible;
+                    TituloNuevoRegistro.Visibility = Visibility.Collapsed;
+                }
+                
                 // Habilitar campos si es necesario
                 if (_vm.Modo == ViewModels.ModoFormulario.Ninguno)
                 {
@@ -172,6 +188,34 @@ namespace AppPrediosDemo
                     BtnNuevoRegistro.Visibility = Visibility.Visible;
                     BtnConsultar.Visibility = Visibility.Collapsed;
                 }
+                
+                // Mostrar título correspondiente
+                if (TituloConsultar != null && TituloNuevoRegistro != null)
+                {
+                    TituloConsultar.Visibility = Visibility.Collapsed;
+                    TituloNuevoRegistro.Visibility = Visibility.Visible;
+                }
+                
+                // Actualizar la vista de consultar según el modo
+                ActualizarVistaConsultar();
+            }
+        }
+        
+        private void ActualizarVistaConsultar()
+        {
+            if (ConsultarBusquedaView == null || ConsultarEdicionView == null)
+                return;
+                
+            // Si estamos en modo Edicion, mostrar el formulario de edición, sino mostrar la búsqueda
+            if (_vm.Modo == ViewModels.ModoFormulario.Edicion)
+            {
+                ConsultarBusquedaView.Visibility = Visibility.Collapsed;
+                ConsultarEdicionView.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                ConsultarBusquedaView.Visibility = Visibility.Visible;
+                ConsultarEdicionView.Visibility = Visibility.Collapsed;
             }
         }
     }

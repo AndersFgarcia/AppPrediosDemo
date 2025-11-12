@@ -64,19 +64,45 @@
             </Grid>
         </Border>
 
-        <!-- Barra de navegación profesional - Solo un botón visible a la vez -->
         <Border DockPanel.Dock="Top"
                 Background="White"
                 BorderBrush="{StaticResource BorderColor}"
                 BorderThickness="0,0,0,1"
                 Padding="20,16"
                 Margin="0">
-            <Grid HorizontalAlignment="Left">
-                <!-- Botón Consultar (visible cuando está en Nuevo Registro) -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock x:Name="TituloConsultar"
+                          Grid.Column="0"
+                          Text="Registrar Nuevo Predio"
+                          FontFamily="{StaticResource PoppinsFont}"
+                          FontSize="16"
+                          FontWeight="SemiBold"
+                          Foreground="{StaticResource TextPrimaryColor}"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Left"
+                          Visibility="Visible"/>
+                
+                <TextBlock x:Name="TituloNuevoRegistro"
+                          Grid.Column="0"
+                          Text="Consultar Registros Existentes"
+                          FontFamily="{StaticResource PoppinsFont}"
+                          FontSize="16"
+                          FontWeight="SemiBold"
+                          Foreground="{StaticResource TextPrimaryColor}"
+                          VerticalAlignment="Center"
+                          HorizontalAlignment="Left"
+                          Visibility="Collapsed"/>
+                
                 <Button x:Name="BtnConsultar"
-                        Content="Consultar"
-                        HorizontalAlignment="Left"
-                        MinWidth="140"
+                        Grid.Column="1"
+                        Content="Consultar Predios"
+                        HorizontalAlignment="Right"
+                        MinWidth="160"
                         Height="42"
                         FontSize="14"
                         FontWeight="SemiBold"
@@ -110,16 +136,16 @@
                     </Button.Style>
                 </Button>
                 
-                <!-- Botón Nuevo Registro (visible cuando está en Consultar) -->
                 <Button x:Name="BtnNuevoRegistro"
+                        Grid.Column="1"
                         Content="Nuevo Registro"
-                        HorizontalAlignment="Left"
+                        HorizontalAlignment="Right"
                         MinWidth="160"
                         Height="42"
                         FontSize="14"
                         FontWeight="SemiBold"
                         FontFamily="{StaticResource PoppinsFont}"
-                        Background="{StaticResource PrimaryColor}"
+                        Background="{StaticResource AccentColor}"
                         Foreground="White"
                         BorderThickness="0"
                         Cursor="Hand"
@@ -141,7 +167,7 @@
                             </Setter>
                             <Style.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource PrimaryDarkColor}"/>
+                                    <Setter Property="Background" Value="{StaticResource AccentDarkColor}"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -150,10 +176,8 @@
             </Grid>
         </Border>
 
-        <!-- Contenido dinámico según el botón seleccionado -->
         <Grid x:Name="ContentArea">
             
-            <!-- CONTENIDO: NUEVO REGISTRO -->
             <Grid x:Name="NuevoRegistroContent" Visibility="Visible">
                             <Grid>
                                 <Grid.RowDefinitions>
@@ -161,11 +185,9 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                    <!-- Formulario continuo con scroll -->
                     <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="20,16,20,16">
-                        <StackPanel>
-                            <!-- SECCIÓN 1: IDENTIFICACIÓN -->
-                            <Expander Header="Identificación">
+                    <StackPanel>
+                            <Expander Header="Identificación" IsExpanded="True">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -206,7 +228,6 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 2: PROCESO AGRARIO -->
                             <Expander Header="Proceso agrario">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -248,7 +269,6 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 3: UBICACIÓN REGISTRAL -->
                             <Expander Header="Ubicación registral">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -312,7 +332,6 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 4: TITULARIDAD Y TRADICIÓN -->
                             <Expander Header="Titularidad y tradición">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -328,14 +347,12 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Fila 0: Tipo de persona titular | Nombre propietario(s) -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo de persona titular" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PredioActual.PersonaTitular, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
 
                                 <TextBlock Grid.Row="0" Grid.Column="2" Text="Nombre propietario(s)" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding PredioActual.NombrePropietarios, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Fila 1: Número identificación | Apellido propietario(s) (debajo de nombre) -->
                                 <TextBlock Grid.Row="1" Grid.Column="0"
                                            Text="Número identificación (CC/NIT)"
                                            Style="{StaticResource LabelCell}"/>
@@ -353,7 +370,6 @@
                                 <TextBlock Grid.Row="1" Grid.Column="2" Text="Apellido propietario(s)" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding PredioActual.ApellidoPropietario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
 
-                                <!-- Fila 2: Acreditación de la propiedad | Naturaleza jurídica -->
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Acreditación de la propiedad" Style="{StaticResource LabelCell}"/>
                                 <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PredioActual.TituloOriginario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
 
@@ -365,7 +381,6 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 5: GRAVÁMENES -->
                             <Expander Header="Gravámenes">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -417,8 +432,7 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 6: RUPTA -->
-                            <Expander Header="RUPTA (Clasificación de Restitución de Tierras)">
+                            <Expander Header="Rupta (Clasificación de restitución de tierras)">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -450,7 +464,6 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 7: OTRAS AFECTACIONES -->
                             <Expander Header="Otras afectaciones">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -500,8 +513,7 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 8: CONCEPTO PREVIO -->
-                            <Expander Header="ANÁLISIS JURÍDICO / CONCEPTO PREVIO">
+                            <Expander Header="Análisis jurídico / Concepto previo">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -534,8 +546,7 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 9: CONCEPTO FINAL -->
-                            <Expander Header="ANÁLISIS JURÍDICO / CONCEPTO FINAL">
+                            <Expander Header="Análisis jurídico / Concepto final">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="220"/>
@@ -588,7 +599,6 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 10: ASIGNACIÓN Y REVISIÓN -->
                             <Expander Header="Asignación y revisión">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -696,7 +706,6 @@
                             </Grid>
                         </Expander>
 
-                            <!-- SECCIÓN 11: GESTIÓN DOCUMENTAL -->
                             <Expander Header="Gestión documental / ORFEO">
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -783,7 +792,6 @@
                             </Grid>
                         </Expander>
 
-                            <!-- Botones al final del formulario - Diseño profesional -->
                             <Border Background="{StaticResource SurfaceColor}"
                                     BorderBrush="{StaticResource BorderColor}"
                                     BorderThickness="0,1,0,0"
@@ -792,7 +800,7 @@
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     
                                     <TextBlock Grid.Column="0"
@@ -833,9 +841,8 @@
                 </Grid>
             </Grid>
 
-            <!-- CONTENIDO: CONSULTAR -->
             <Grid x:Name="ConsultarContent" Visibility="Collapsed">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="12,8,12,8">
+                <ScrollViewer x:Name="ConsultarBusquedaView" VerticalScrollBarVisibility="Auto" Padding="12,8,12,8">
                     <StackPanel>
                         <GroupBox Header="Búsqueda de Registros" Margin="12,8,12,12">
                             <Grid>
@@ -857,7 +864,6 @@
                                     <ColumnDefinition Width="*" MinWidth="140"/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- Fila 0: Campos de búsqueda -->
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="ID" Style="{StaticResource LabelCell}"/>
                                 <TextBox   Grid.Row="0" Grid.Column="1"
                                             Text="{Binding FiltroId, UpdateSourceTrigger=PropertyChanged}" 
@@ -873,9 +879,8 @@
                                             Text="{Binding FiltroExpediente, UpdateSourceTrigger=PropertyChanged}" 
                                             Style="{StaticResource InputCell}"/>
 
-                                <!-- Fila 1: Botones de acción -->
                                 <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="8"
-                                            Orientation="Horizontal"
+                    Orientation="Horizontal"
                                             HorizontalAlignment="Right"
                                             Margin="0,12,0,0">
                                     <Button Content="Buscar"  
@@ -891,7 +896,6 @@
                                             Style="{StaticResource SecondaryButton}"/>
                                 </StackPanel>
 
-                                <!-- Botón Editar -->
                                 <Border Grid.Row="2" Grid.ColumnSpan="8" 
                                         Background="{StaticResource SurfaceColor}"
                                         BorderBrush="{StaticResource BorderColor}"
@@ -915,45 +919,771 @@
                                 </Border>
 
                                 <DataGrid Grid.Row="3" Grid.ColumnSpan="8" Margin="0,8,0,0"
-                                          ItemsSource="{Binding ResultadosBusqueda}"
-                                          SelectedItem="{Binding ResultadoSeleccionado}"
-                                          AutoGenerateColumns="False"
-                                          IsReadOnly="True"
-                                          CanUserAddRows="False">
+                  ItemsSource="{Binding ResultadosBusqueda}"
+                  SelectedItem="{Binding ResultadoSeleccionado}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                                          CanUserAddRows="False"
+                                          Background="White"
+                                          Foreground="#333333"
+                                          RowBackground="White"
+                                          AlternatingRowBackground="#F9F9F9"
+                                          GridLinesVisibility="None"
+                                          BorderBrush="Transparent"
+                                          BorderThickness="0"
+                                          RowHeight="44">
+                                    <DataGrid.RowStyle>
+                                        <Style TargetType="DataGridRow">
+                                            <Setter Property="Foreground" Value="#333333"/>
+                                            <Setter Property="MinHeight" Value="44"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="{StaticResource HoverColor}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="#E8F5E9"/>
+                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryColor}"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.RowStyle>
+                                    <DataGrid.ColumnHeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="Background" Value="{StaticResource PrimaryColor}"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
+                                            <Setter Property="FontSize" Value="13"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                            <Setter Property="Padding" Value="16,12"/>
+                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Height" Value="48"/>
+                                        </Style>
+                                    </DataGrid.ColumnHeaderStyle>
+                                    <DataGrid.CellStyle>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="Foreground" Value="#333333"/>
+                                            <Setter Property="BorderBrush" Value="Transparent"/>
+                                            <Setter Property="BorderThickness" Value="0"/>
+                                            <Setter Property="Padding" Value="16,10"/>
+                                            <Setter Property="FontFamily" Value="{StaticResource PoppinsFont}"/>
+                                            <Setter Property="FontSize" Value="13"/>
+                                            <Setter Property="VerticalContentAlignment" Value="Center"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Foreground" Value="{StaticResource PrimaryColor}"/>
+                                                    <Setter Property="Background" Value="Transparent"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </DataGrid.CellStyle>
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="ID"
-                                                            Binding="{Binding IdPostulacion}"
-                                                            Width="120"/>
+                        Binding="{Binding IdPostulacion}"
+                        Width="120"/>
 
                                         <DataGridTextColumn Header="FMI"
-                                                            Binding="{Binding FMI}"
-                                                            Width="*"/>
+                        Binding="{Binding FMI}"
+                        Width="*"/>
 
                                         <DataGridTextColumn Header="No. Expediente"
-                                                            Binding="{Binding NumeroExpediente}"
-                                                            Width="150"/>
+                        Binding="{Binding NumeroExpediente}"
+                        Width="150"/>
 
                                         <DataGridTextColumn Header="Nombre abogado"
-                                                            Binding="{Binding AbogadoSustanciador}"
-                                                            Width="160"/>
+                        Binding="{Binding AbogadoSustanciador}"
+                        Width="160"/>
 
                                         <DataGridTextColumn Header="Abogado revisor"
-                                                            Binding="{Binding AbogadoRevisor}"
-                                                            Width="160"/>
+                        Binding="{Binding AbogadoRevisor}"
+                        Width="160"/>
 
                                         <DataGridTextColumn Header="Fecha asignación"
-                                                            Binding="{Binding FechaAsignacionReparto, StringFormat=\{0:dd/MM/yyyy\}}"
-                                                            Width="130"/>
+                        Binding="{Binding FechaAsignacionReparto, StringFormat=\{0:dd/MM/yyyy\}}"
+                        Width="130"/>
 
                                         <DataGridTextColumn Header="Fecha entrega"
-                                                            Binding="{Binding FechaEntregaARevisor, StringFormat=\{0:dd/MM/yyyy\}}"
-                                                            Width="130"/>
+                        Binding="{Binding FechaEntregaARevisor, StringFormat=\{0:dd/MM/yyyy\}}"
+                        Width="130"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </Grid>
                         </GroupBox>
                     </StackPanel>
                 </ScrollViewer>
+                
+                <Grid x:Name="ConsultarEdicionView" Visibility="Collapsed">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Border Grid.Row="0" 
+                            Background="{StaticResource PrimaryColor}"
+                            Padding="20,16"
+                            Margin="0,0,0,16">
+                        <TextBlock Text="Editando Registro" 
+                                  Foreground="White"
+                                  FontSize="18"
+                                  FontWeight="Bold"
+                                  FontFamily="{StaticResource PoppinsFont}"
+                                  VerticalAlignment="Center"/>
+                        </Border>
+                    
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20,16,20,16">
+                        <StackPanel>
+                            <Expander Header="Identificación" IsExpanded="True">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="ID *" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="1"
+                             Text="{Binding PredioActual.ID, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputCell}"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="FMI *" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="3"
+                             Text="{Binding PredioActual.FMI, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputCell}"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="No. Expediente" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                             Text="{Binding PredioActual.NoExpediente, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputCell}"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Fuente" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="3" Style="{StaticResource ComboCell}"
+                              ItemsSource="{Binding FuentesProceso}"
+                              DisplayMemberPath="Nombre"
+                              SelectedValuePath="Id"
+                              SelectedValue="{Binding PredioActual.IdFuenteProceso, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Proceso agrario">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo de proceso agrario" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                              ItemsSource="{Binding TipoProcesos}"
+                              DisplayMemberPath="Nombre"
+                              SelectedValuePath="Id"
+                              SelectedValue="{Binding PredioActual.IdTipoProceso, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Etapa procesal" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
+                              ItemsSource="{Binding EtapasProcesales}"
+                              DisplayMemberPath="Nombre"
+                              SelectedValuePath="Id"
+                              SelectedValue="{Binding PredioActual.IdEtapaProcesal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="ID ORFEO" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource InputCell}"
+                             Text="{Binding PredioActual.RadicadoOrfeo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Dependencia" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Style="{StaticResource InputCell}"
+                             Text="{Binding PredioActual.Dependencia, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Ubicación registral">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Departamento *" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Departamentos}"
+                                          SelectedItem="{Binding SelectedDepartamento, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          DisplayMemberPath="Nombre"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Municipio *" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Municipios}"
+                                          SelectedItem="{Binding SelectedMunicipio, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          DisplayMemberPath="Nombre"
+                                          IsEditable="False"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Centro poblado *" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding CentrosPoblados}"
+                                          SelectedItem="{Binding SelectedCentro, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          DisplayMemberPath="Nombre"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Círculo registral" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3"
+                                         Text="{Binding PredioActual.CirculoRegistral, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource InputCell}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"
+                                         infra:AlphanumericInput.Enable="True"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Área registral" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="1"
+                                         Style="{StaticResource InputCell}"
+                                         Text="{Binding PredioActual.AreaRegistral,
+                                                        Mode=TwoWay,
+                                                                    UpdateSourceTrigger=LostFocus}" 
+                                                     IsEnabled="{Binding PuedeEditarCampos}"
+                                                     infra:DecimalInput.Enable="True"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Área calculada *" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3"
+                                         Style="{StaticResource InputCell}"
+                                         Text="{Binding PredioActual.AreaCalculada,
+                                                        Mode=TwoWay,
+                                                                    UpdateSourceTrigger=LostFocus}" 
+                                                     IsEnabled="{Binding PuedeEditarCampos}"
+                                                     infra:DecimalInput.Enable="True"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Titularidad y tradición">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tipo de persona titular" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding PredioActual.PersonaTitular, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Nombre propietario(s)" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding PredioActual.NombrePropietarios, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0"
+                                           Text="Número identificación (CC/NIT)"
+                                           Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                                         Text="{Binding PredioActual.NumeroIdentificacion,
+                                                        Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged,
+                                                        ValidatesOnDataErrors=True,
+                                                        ValidatesOnNotifyDataErrors=True,
+                                                        NotifyOnValidationError=True}"
+                                         Style="{StaticResource TextInputWithValidation}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"
+                                         infra:IntegerInput.Enable="True"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Apellido propietario(s)" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding PredioActual.ApellidoPropietario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Acreditación de la propiedad" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding PredioActual.TituloOriginario, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Naturaleza jurídica del predio" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3"
+                                         Text="{Binding PredioActual.AnalisisNaturalezaUltimaTradicion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource NoteBox}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Gravámenes">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="250" MinWidth="250"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Hipoteca" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Hipoteca.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Anotación HIPOTECA" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Hipoteca.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Servidumbres" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Servidumbres.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Anotación SERVIDUMBRES" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Servidumbres.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Medidas cautelares" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.MedidasCautelares.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+                                
+                                <TextBlock Grid.Row="2" Grid.Column="2" 
+                                           Text="Anotación MEDIDAS CAUTELARES" 
+                                           Style="{StaticResource LabelCell}"
+                                           TextWrapping="Wrap"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.MedidasCautelares.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Rupta (Clasificación de restitución de tierras)">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="RUPTA" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Rupta.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Tipo clasificación" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="3" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.RuptaClasificacionOpciones}"
+                                          SelectedItem="{Binding Medidas.Rupta.TipoClasificacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Anotación RUPTA" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Rupta.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Otras afectaciones">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="RTDAF Ley 1448" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.RTDAF.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Anotación RTDAF" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.RTDAF.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Oferta otras entidades" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Oferta.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+                                
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Anotación OFERTA" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Oferta.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Procesos de clarificación" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
+                                          ItemsSource="{Binding Medidas.ValoresSN}"
+                                          SelectedItem="{Binding Medidas.Clarificacion.Valor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+                                
+                                <TextBlock Grid.Row="2" Grid.Column="2" Text="Anotación CLARIFICACIÓN" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Style="{StaticResource NoteBox}"
+                                         Text="{Binding Medidas.Clarificacion.Anotacion, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Análisis jurídico / Concepto previo">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Tiene informe jurídico previo" Style="{StaticResource LabelCell}"/>
+                                <CheckBox Grid.Row="0" Grid.Column="1"
+                                          IsChecked="{Binding PredioActual.CuentaConInformeJuridicoPrevio}"
+                                          VerticalAlignment="Center"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+                                
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Fecha informe previo" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="0" Grid.Column="3"
+                                            SelectedDate="{Binding PredioActual.FechaInformePrevioReportada}"
+                                            IsEnabled="{Binding PredioActual.CuentaConInformeJuridicoPrevio}"
+                                            Style="{StaticResource DatePickerStyle}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Concepto antiguo" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+                                         Text="{Binding PredioActual.ConceptoAntiguo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         IsEnabled="{Binding PredioActual.CuentaConInformeJuridicoPrevio}"
+                                         Style="{StaticResource NoteBox}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Análisis jurídico / Concepto final">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Análisis / Concepto final" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3"
+                                         Text="{Binding PredioActual.AnalisisJuridicoFinal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource NoteBox}" MinHeight="100"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Fecha de informe" Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="1" Grid.Column="1"
+                                            SelectedDate="{Binding PredioActual.FechaInforme}"
+                                            Style="{StaticResource DatePickerStyle}"
+                                            IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Viabilidad" Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="1" Grid.Column="3"
+                                          ItemsSource="{Binding OpcionesViabilidad}"
+                                          SelectedItem="{Binding PredioActual.Viabilidad, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Style="{StaticResource ComboCell}"
+                                          IsEnabled="{Binding PuedeEditarCampos}"/>
+
+								<TextBlock Grid.Row="2" Grid.Column="0" Text="Tipo de informe" Style="{StaticResource LabelCell}"/>
+								<ComboBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ComboCell}"
+									        ItemsSource="{Binding TiposInforme}"
+									        DisplayMemberPath="Nombre"
+									        SelectedValuePath="Id"
+									        SelectedValue="{Binding PredioActual.IdTipoInforme, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                            IsEnabled="{Binding PuedeEditarCampos}"/>
+
+								<TextBlock Grid.Row="2" Grid.Column="2" Text="Causal no viabilidad" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="2" Grid.Column="3" Text="{Binding PredioActual.CausalNoViabilidad, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource InputCell}" IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Insumos pendientes" Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3"
+                                         Text="{Binding PredioActual.InsumosPendientes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource NoteBox}" MinHeight="70"
+                                         IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Asignación y revisión">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Fecha entrega a revisor *"
+                               Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="0" Grid.Column="1"
+                                SelectedDate="{Binding PredioActual.FechaEntregaARevisor}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="2"
+                               Text="Abogado sustanciador asignado *"
+                               Style="{StaticResource LabelCell}"
+                               IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBox Grid.Row="0" Grid.Column="3"
+                             Text="{Binding PredioActual.AbogadoSustanciadorAsignado,
+                                            Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputCell}"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0"
+                               Text="Abogado revisor asignado *"
+                               Style="{StaticResource LabelCell}"
+                               IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                             Text="{Binding PredioActual.AbogadoRevisorAsignado,
+                                            Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputCell}"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="2"
+                                           Text="# Reparto"
+                                           Style="{StaticResource LabelCell}"/>
+
+                                <TextBox Grid.Row="1" Grid.Column="3"
+                                         Text="{Binding PredioActual.NumeroReparto,
+                                                        Mode=TwoWay,
+                                                        UpdateSourceTrigger=PropertyChanged,
+                                                        ValidatesOnDataErrors=True,
+                                                        ValidatesOnNotifyDataErrors=True,
+                                                        NotifyOnValidationError=True}"
+                                         Style="{StaticResource TextInputWithValidation}"
+                                                     IsEnabled="{Binding PuedeEditarCampos}"
+                                                     infra:IntegerInput.Enable="True"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="Fecha asignación reparto *"
+                               Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="2" Grid.Column="1"
+                                SelectedDate="{Binding PredioActual.FechaAsignacionReparto}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="2"
+                               Text="Plazo para entrega a revisor *"
+                               Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="2" Grid.Column="3"
+                                SelectedDate="{Binding PredioActual.FechaPlazoEntregaARevisor,
+                                                       Mode=TwoWay,
+                                                       UpdateSourceTrigger=PropertyChanged}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0"
+                               Text="Estado revisión"
+                               Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="3" Grid.Column="1"
+                              ItemsSource="{Binding TiposEstadoRevision}"
+                              DisplayMemberPath="Nombre"
+                              SelectedValuePath="Id"
+                              SelectedValue="{Binding PredioActual.IdTipoEstadoRevision,
+                                                     Mode=TwoWay,
+                                                     UpdateSourceTrigger=PropertyChanged}"
+                              IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0"
+                               Text="Observaciones revisor"
+                               Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3"
+                             Text="{Binding PredioActual.ObservacionesRevisor,
+                                            Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource NoteBox}"
+                             MinHeight="60"
+                             VerticalScrollBarVisibility="Auto"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+
+                            <Expander Header="Gestión documental / ORFEO">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="220"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="250" MinWidth="250"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0"
+                               Text="Entregó carpeta de soportes"
+                               Style="{StaticResource LabelCell}"/>
+                                <ComboBox Grid.Row="0" Grid.Column="1"
+                              ItemsSource="{Binding OpcionesEntregaCarpeta}"
+                              SelectedItem="{Binding PredioActual.EntregoCarpetaSoportes,
+                                                     Mode=TwoWay,
+                                                     UpdateSourceTrigger=PropertyChanged}"
+                              IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="0" Grid.Column="2"
+                               Text="Fecha envío a coordinación"
+                               Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="0" Grid.Column="3"
+                                SelectedDate="{Binding PredioActual.FechaEnvioACoordinacion}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0"
+                               Text="Estado aprobación coordinadora"
+                               Style="{StaticResource LabelCell}"/>
+                                <TextBox Grid.Row="1" Grid.Column="1"
+                             Text="{Binding PredioActual.EstadoAprobacionCoordinadora,
+                                            Mode=TwoWay,
+                                            UpdateSourceTrigger=PropertyChanged}"
+                             Style="{StaticResource InputCell}"
+                             IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="2"
+                               Text="Fecha remisión soportes a gestora"
+                               Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="1" Grid.Column="3"
+                                SelectedDate="{Binding PredioActual.FechaRemisionSoportesGestoraDocumental}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0"
+                               Text="Fecha remisión informe a gestora"
+                               Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="2" Grid.Column="1"
+                                SelectedDate="{Binding PredioActual.FechaRemisionInformeGestoraDocumental}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="2"
+                               Text="Fecha cargue inf. jurídico en ORFEO"
+                               Style="{StaticResource LabelCell}"
+                               TextWrapping="Wrap"/>
+                                <DatePicker Grid.Row="2" Grid.Column="3"
+                                SelectedDate="{Binding PredioActual.FechaCargueInformeJuridicoEnExpteOrfeo}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0"
+                               Text="Fecha cargue docs y soportes en ORFEO"
+                               Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="3" Grid.Column="1"
+                                SelectedDate="{Binding PredioActual.FechaCargueDocumentosYSoportesEnExpdteOrfeo}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="2"
+                               Text="Fecha gestión etapa SIT"
+                               Style="{StaticResource LabelCell}"/>
+                                <DatePicker Grid.Row="3" Grid.Column="3"
+                                SelectedDate="{Binding PredioActual.FechaGestionEtapaSIT}"
+                                Style="{StaticResource DatePickerStyle}"
+                                IsEnabled="{Binding PuedeEditarCampos}"/>
+                            </Grid>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+                    
+                    <Border Grid.Row="2"
+                            Background="{StaticResource SurfaceColor}"
+                            BorderBrush="{StaticResource BorderColor}"
+                            BorderThickness="0,1,0,0"
+                            Padding="20,20"
+                            Margin="0,24,0,0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0"
+                                      Text="Complete todos los campos obligatorios antes de guardar"
+                                      VerticalAlignment="Center"
+                                      Foreground="{StaticResource TextSecondaryColor}"
+                                      FontFamily="{StaticResource PoppinsFont}"
+                                      FontSize="12"
+                                      FontStyle="Italic"
+                                      Margin="0,0,20,0"/>
+                            
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button Content="Cancelar"
+                                        MinWidth="140"
+                                        Height="48"
+                                        Margin="0,0,12,0"
+                                        Command="{Binding CancelarEdicionCommand}"
+                                        Style="{StaticResource SecondaryButton}"
+                                        FontSize="14"
+                                        FontWeight="SemiBold"
+                                        Padding="24,14"/>
+                                
+                                <Button Content="Guardar Cambios"
+                                        MinWidth="180"
+                                        Height="48"
+                                        Command="{Binding GuardarCommand}"
+                                        Style="{StaticResource PrimaryButton}"
+                                        FontSize="14"
+                                        FontWeight="Bold"
+                                        Padding="32,14"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
             </Grid>
         </Grid>
     </DockPanel>
